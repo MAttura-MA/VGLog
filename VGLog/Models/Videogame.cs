@@ -8,6 +8,7 @@ namespace VGLog.Models
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
         public int? ReleaseYear { get; set; }
+        public byte? Image { get; set; }
         public GameStatus Status { get; set; }
         public DateTime AddedAt { get; set; } = DateTime.Now;
         public DateTime? CompletedAt {  get; set; }
