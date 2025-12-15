@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VGLog.Data;
 using VGLog.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace VGLog.Services
 {
@@ -27,14 +28,21 @@ namespace VGLog.Services
 
         }
 
-        public async Task CreateAsync(Videogame videogame)
+        public async Task<Videogame?> CreateAsync(Videogame videogame)
         {
-            _context.Videogames.Add(videogame);
-            await _context.SaveChangesAsync();
+            if (videogame != null)
+            {
+                _context.Videogames.Add(videogame);
+                await _context.SaveChangesAsync();
+
+                return videogame;
+            }
+
+            return null;
 
         }
 
-        public async Task DeleteAsync(int Id)
+        public async Task<Videogame?> DeleteAsync(int Id)
         {
             var entity = await _context.Videogames.FindAsync(Id);
 
@@ -42,10 +50,13 @@ namespace VGLog.Services
             {
                 _context.Videogames.Remove(entity);
                 await _context.SaveChangesAsync();
+                return entity;
             }
+
+            return null;
         }
 
-        public async Task UpdateAsync(Videogame videogame)
+        public async Task<Videogame?> UpdateAsync(Videogame videogame)
         {
             var entity = await _context.Videogames.FindAsync(videogame.Id); 
 
@@ -53,7 +64,10 @@ namespace VGLog.Services
             {
                 _context.Videogames.Update(videogame);
                 await _context.SaveChangesAsync();
+                return entity;
             }
+
+            return null;
         }
     }
 }

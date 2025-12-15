@@ -11,7 +11,7 @@ namespace VGLog.Data
     public DbSet<Videogame> Videogames { get; set; }
     public DbSet<SoftwareHouse> SoftwareHouses {  get; set; }
     public DbSet<Genre> Genres { get; set; }
-    public DbSet<Platform> platforms { get; set; }
+    public DbSet<Platform> Platforms { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

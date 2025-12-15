@@ -1,12 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using VGLog.Components;
 using VGLog.Data;
+using VGLog.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+//Registrazione dei controller
+builder.Services.AddControllers();
+
+//Registrazione dei services
+builder.Services.AddScoped<VideogameService>();
+builder.Services.AddScoped<SoftwareHouseService>();
+builder.Services.AddScoped<PlatformService>();
+builder.Services.AddScoped<GenreService>();
+
+
+
+//Registrazione del DbContext
 builder.Services.AddDbContext <AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -21,6 +35,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapControllers();
 
 
 app.UseAntiforgery();

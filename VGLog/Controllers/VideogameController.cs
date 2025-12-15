@@ -1,164 +1,93 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VGLog.Data;
 using VGLog.Models;
+using VGLog.Services;
 
 namespace VGLog.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class VideogameController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly VideogameService _videogameService;
 
-        public VideogameController(AppDbContext context)
+        public VideogameController(AppDbContext context, VideogameService videogameService)
         {
             _context = context;
+            _videogameService = videogameService;
         }
 
-        // GET: Videogame
-        public async Task<IActionResult> Index()
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllVideogamesAsync()
         {
-            var appDbContext = _context.Videogames.Include(v => v.SoftwareHouse);
-            return View(await appDbContext.ToListAsync());
+            var result = await _videogameService.GetAllAsync();
+            return Ok(result);
         }
 
-        // GET: Videogame/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet("GetById/{id}")]
+        public async Task<Videogame> GetByIdVideogame(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var videogame = await _context.Videogames
-                .Include(v => v.SoftwareHouse)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (videogame == null)
-            {
-                return NotFound();
-            }
-
-            return View(videogame);
+            var result = await _videogameService.GetByIdAsync(id);
+            return result;
         }
 
-        // GET: Videogame/Create
-        public IActionResult Create()
+        [HttpPost("CreateVideogame")]
+        public async Task<ActionResult<Videogame>> CreateVideogame([FromBody] Videogame videogame)
         {
-            ViewData["SoftwareHouseId"] = new SelectList(_context.SoftwareHouses, "Id", "Id");
-            return View();
+            var created = await _videogameService.CreateAsync(videogame);
+            if (created != null)
+            {
+                return CreatedAtAction(
+                    nameof(GetByIdVideogame),
+                    new { id = created.Id },
+                    created
+                );
+            }
+
+            return BadRequest();
         }
 
-        // POST: Videogame/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,ReleaseYear,Image,Status,AddedAt,CompletedAt,PersonalRating,Notes,SoftwareHouseId")] Videogame videogame)
+        [HttpDelete("DeleteVideogame/{id}")]
+        public async Task<ActionResult<Videogame>> DeleteVideogame(int id)
         {
-            if (ModelState.IsValid)
+            var deleted = await _videogameService.DeleteAsync(id);
+            if (deleted != null)
             {
-                _context.Add(videogame);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(
+                    nameof(GetByIdVideogame),
+                    new { id = deleted.Id },
+                    deleted
+                );
             }
-            ViewData["SoftwareHouseId"] = new SelectList(_context.SoftwareHouses, "Id", "Id", videogame.SoftwareHouseId);
-            return View(videogame);
+
+            return BadRequest();
+        
         }
 
-        // GET: Videogame/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpPut("EditVideogame")]
+        public async Task<ActionResult<Videogame>> UpdateVideogame([FromBody] Videogame videogame)
         {
-            if (id == null)
+            var updated = await _videogameService.UpdateAsync(videogame);
+            if (updated != null)
             {
-                return NotFound();
+                return CreatedAtAction(
+                    nameof(GetByIdVideogame),
+                    new { id = updated.Id },
+                    updated
+                );
             }
 
-            var videogame = await _context.Videogames.FindAsync(id);
-            if (videogame == null)
-            {
-                return NotFound();
-            }
-            ViewData["SoftwareHouseId"] = new SelectList(_context.SoftwareHouses, "Id", "Id", videogame.SoftwareHouseId);
-            return View(videogame);
-        }
+            return BadRequest();
 
-        // POST: Videogame/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,ReleaseYear,Image,Status,AddedAt,CompletedAt,PersonalRating,Notes,SoftwareHouseId")] Videogame videogame)
-        {
-            if (id != videogame.Id)
-            {
-                return NotFound();
-            }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(videogame);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!VideogameExists(videogame.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["SoftwareHouseId"] = new SelectList(_context.SoftwareHouses, "Id", "Id", videogame.SoftwareHouseId);
-            return View(videogame);
-        }
-
-        // GET: Videogame/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var videogame = await _context.Videogames
-                .Include(v => v.SoftwareHouse)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (videogame == null)
-            {
-                return NotFound();
-            }
-
-            return View(videogame);
-        }
-
-        // POST: Videogame/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var videogame = await _context.Videogames.FindAsync(id);
-            if (videogame != null)
-            {
-                _context.Videogames.Remove(videogame);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool VideogameExists(int id)
-        {
-            return _context.Videogames.Any(e => e.Id == id);
         }
     }
 }

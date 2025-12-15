@@ -22,7 +22,7 @@ namespace VGLog.Controllers
         // GET: Platform
         public async Task<IActionResult> Index()
         {
-            return View(await _context.platforms.ToListAsync());
+            return View(await _context.Platforms.ToListAsync());
         }
 
         // GET: Platform/Details/5
@@ -33,7 +33,7 @@ namespace VGLog.Controllers
                 return NotFound();
             }
 
-            var platform = await _context.platforms
+            var platform = await _context.Platforms
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (platform == null)
             {
@@ -73,7 +73,7 @@ namespace VGLog.Controllers
                 return NotFound();
             }
 
-            var platform = await _context.platforms.FindAsync(id);
+            var platform = await _context.Platforms.FindAsync(id);
             if (platform == null)
             {
                 return NotFound();
@@ -124,7 +124,7 @@ namespace VGLog.Controllers
                 return NotFound();
             }
 
-            var platform = await _context.platforms
+            var platform = await _context.Platforms
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (platform == null)
             {
@@ -139,10 +139,10 @@ namespace VGLog.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var platform = await _context.platforms.FindAsync(id);
+            var platform = await _context.Platforms.FindAsync(id);
             if (platform != null)
             {
-                _context.platforms.Remove(platform);
+                _context.Platforms.Remove(platform);
             }
 
             await _context.SaveChangesAsync();
@@ -151,7 +151,7 @@ namespace VGLog.Controllers
 
         private bool PlatformExists(int id)
         {
-            return _context.platforms.Any(e => e.Id == id);
+            return _context.Platforms.Any(e => e.Id == id);
         }
     }
 }
