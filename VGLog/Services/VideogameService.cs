@@ -21,7 +21,7 @@ namespace VGLog.Services
                 .ToListAsync();
         }
 
-        public async Task<Videogame> GetByIdAsync(int Id)
+        public async Task<Videogame?> GetByIdAsync(int Id)
         {
 
             return await _context.Videogames.FindAsync(Id);

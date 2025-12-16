@@ -26,7 +26,7 @@ namespace VGLog.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllVideogamesAsync()
+        public async Task<ActionResult<Videogame>> GetAllVideogamesAsync()
         {
             var result = await _videogameService.GetAllAsync();
             return Ok(result);

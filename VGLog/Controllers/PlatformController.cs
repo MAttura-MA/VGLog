@@ -7,151 +7,105 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VGLog.Data;
 using VGLog.Models;
+using VGLog.Services;
 
 namespace VGLog.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class PlatformController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly PlatformService _platformService;
 
-        public PlatformController(AppDbContext context)
+        public PlatformController(AppDbContext context, PlatformService platformService)
         {
             _context = context;
+            _platformService = platformService;
         }
 
-        // GET: Platform
-        public async Task<IActionResult> Index()
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllPlatformsAsync()
         {
-            return View(await _context.Platforms.ToListAsync());
-        }
-
-        // GET: Platform/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            var result = await _platformService.GetAllAsync();
+            if (result == null)
             {
                 return NotFound();
             }
 
-            var platform = await _context.Platforms
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (platform == null)
+            return Ok(result);
+        }
+
+        [HttpGet("GetById/{id}")]
+        public async Task<ActionResult<Platform>> GetByIdPlatform(int id)
+        {
+            var result = await _platformService.GetByIdAsync(id);
+
+            if (result == null)
             {
                 return NotFound();
             }
 
-            return View(platform);
+            return Ok(result);
         }
 
-        // GET: Platform/Create
-        public IActionResult Create()
+        [HttpPost("CreatePlatform")]
+        public async Task<ActionResult<Platform>> CreatePlatform([FromBody] Platform platform)
         {
-            return View();
-        }
 
-        // POST: Platform/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Platform platform)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(platform);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(platform);
-        }
-
-        // GET: Platform/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var platform = await _context.Platforms.FindAsync(id);
-            if (platform == null)
-            {
-                return NotFound();
-            }
-            return View(platform);
-        }
-
-        // POST: Platform/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Platform platform)
-        {
-            if (id != platform.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(platform);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PlatformExists(platform.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(platform);
-        }
-
-        // GET: Platform/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var platform = await _context.Platforms
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (platform == null)
-            {
-                return NotFound();
-            }
-
-            return View(platform);
-        }
-
-        // POST: Platform/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var platform = await _context.Platforms.FindAsync(id);
             if (platform != null)
             {
-                _context.Platforms.Remove(platform);
+                var created = await _platformService.CreateAsync(platform);
+                if (created != null)
+                {
+                    return CreatedAtAction(
+                        nameof(GetByIdPlatform),
+                        new { id = created.Id },
+                        created
+                    );
+                }
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return BadRequest();
         }
 
-        private bool PlatformExists(int id)
+        [HttpDelete("DeletePlatform/{id}")]
+        public async Task<ActionResult<Platform>> DeletePlatform(int id)
         {
-            return _context.Platforms.Any(e => e.Id == id);
+
+            var deleted = await _platformService.DeleteAsync(id);
+
+            if (deleted != null)
+            {
+                return CreatedAtAction(
+                    nameof(GetByIdPlatform),
+                    new { id = deleted.Id },
+                    deleted
+                );
+            }
+
+            return BadRequest();
+
+        }
+
+        [HttpPut("EditPlatform")]
+        public async Task<ActionResult<Platform>> UpdatePlatform([FromBody] Platform platform)
+        {
+            var updated = await _platformService.UpdateAsync(platform);
+
+            if (updated != null)
+            {
+                return CreatedAtAction(
+                    nameof(GetByIdPlatform),
+                    new { id = updated.Id },
+                    updated
+                );
+            }
+
+            return BadRequest();
+
+
         }
     }
 }
+
