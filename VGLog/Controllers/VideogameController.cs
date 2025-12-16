@@ -29,14 +29,26 @@ namespace VGLog.Controllers
         public async Task<ActionResult<Videogame>> GetAllVideogamesAsync()
         {
             var result = await _videogameService.GetAllAsync();
-            return Ok(result);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+
+            return NotFound();
+
         }
 
         [HttpGet("GetById/{id}")]
-        public async Task<Videogame> GetByIdVideogame(int id)
+        public async Task<ActionResult<Videogame>> GetByIdVideogame(int id)
         {
+
             var result = await _videogameService.GetByIdAsync(id);
-            return result;
+            if (result != null)
+            {
+                return Ok(result);
+            }
+
+            return NotFound();
         }
 
         [HttpPost("CreateVideogame")]

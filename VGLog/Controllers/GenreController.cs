@@ -7,151 +7,104 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VGLog.Data;
 using VGLog.Models;
+using VGLog.Services;
 
 namespace VGLog.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class GenreController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly GenreService _genreService;
 
-        public GenreController(AppDbContext context)
+        public GenreController(AppDbContext context, GenreService genreService)
         {
             _context = context;
+            _genreService = genreService;
         }
 
-        // GET: Genre
-        public async Task<IActionResult> Index()
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllGenresAsync()
         {
-            return View(await _context.Genres.ToListAsync());
-        }
-
-        // GET: Genre/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            var result = await _genreService.GetAllAsync();
+            if (result == null)
             {
                 return NotFound();
             }
 
-            var genre = await _context.Genres
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (genre == null)
+            return Ok(result);
+        }
+
+        [HttpGet("GetById/{id}")]
+        public async Task<ActionResult<Genre>> GetByIdGenres(int id)
+        {
+            var result = await _genreService.GetByIdAsync(id);
+
+            if (result == null)
             {
                 return NotFound();
             }
 
-            return View(genre);
+            return Ok(result);
         }
 
-        // GET: Genre/Create
-        public IActionResult Create()
+        [HttpPost("CreateGenre")]
+        public async Task<ActionResult<Genre>> CreateGenre([FromBody] Genre genre)
         {
-            return View();
-        }
 
-        // POST: Genre/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Genre genre)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(genre);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(genre);
-        }
-
-        // GET: Genre/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-            return View(genre);
-        }
-
-        // POST: Genre/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Genre genre)
-        {
-            if (id != genre.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(genre);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!GenreExists(genre.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(genre);
-        }
-
-        // GET: Genre/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var genre = await _context.Genres
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-
-            return View(genre);
-        }
-
-        // POST: Genre/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var genre = await _context.Genres.FindAsync(id);
             if (genre != null)
             {
-                _context.Genres.Remove(genre);
+                var created = await _genreService.CreateAsync(genre);
+                if (created != null)
+                {
+                    return CreatedAtAction(
+                        nameof(GetByIdGenres),
+                        new { id = created.Id },
+                        created
+                    );
+                }
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return BadRequest();
         }
 
-        private bool GenreExists(int id)
+        [HttpDelete("DeleteGenre/{id}")]
+        public async Task<ActionResult<Genre>> DeleteGenre(int id)
         {
-            return _context.Genres.Any(e => e.Id == id);
+
+            var deleted = await _genreService.DeleteAsync(id);
+
+            if (deleted != null)
+            {
+                return CreatedAtAction(
+                    nameof(GetByIdGenres),
+                    new { id = deleted.Id },
+                    deleted
+                );
+            }
+
+            return BadRequest();
+
+        }
+
+        [HttpPut("EditGenre")]
+        public async Task<ActionResult<Genre>> UpdateGenre([FromBody] Genre genre)
+        {
+            var updated = await _genreService.UpdateAsync(genre);
+
+            if (updated != null)
+            {
+                return CreatedAtAction(
+                    nameof(GetByIdGenres),
+                    new { id = updated.Id },
+                    updated
+                );
+            }
+
+            return BadRequest();
+
+
         }
     }
 }

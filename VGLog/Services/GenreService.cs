@@ -19,40 +19,63 @@ namespace VGLog.Services
                 .ToListAsync();
         }
 
-        public async Task<Genre> GetByIdAsync(int Id)
+        public async Task<Genre?> GetByIdAsync(int Id)
         {
 
             return await _context.Genres.FindAsync(Id);
 
         }
 
-        public async Task CreateAsync(Genre genre)
+        public async Task<Genre?> CreateAsync(Genre genre)
         {
-            _context.Genres.Add(genre);
-            await _context.SaveChangesAsync();
+            if (genre != null)
+            {
+                _context.Genres.Add(genre);
+                await _context.SaveChangesAsync();
+                return genre;
+            }
+
+            return null;
 
         }
 
-        public async Task DeleteAsync(int Id)
+        public async Task<Genre?> DeleteAsync(int? Id)
         {
-            var entity = await _context.Genres.FindAsync(Id);
-
-            if (entity != null)
+            if (Id != null)
             {
-                _context.Genres.Remove(entity);
-                await _context.SaveChangesAsync();
+                var entity = await _context.Genres.FindAsync(Id);
+
+                if (entity != null)
+                {
+                    _context.Genres.Remove(entity);
+                    await _context.SaveChangesAsync();
+
+                    return entity;
+                }
+
             }
+
+            return null;
+
         }
 
-        public async Task UpdateAsync(Genre genre)
+        public async Task<Genre?> UpdateAsync(Genre genre)
         {
-            var entity = await _context.Genres.FindAsync(genre.Id);
-
-            if (entity != null)
+            if (genre != null)
             {
-                _context.Genres.Update(genre);
-                await _context.SaveChangesAsync();
+                var entity = await _context.Genres.FindAsync(genre.Id);
+                if (entity != null)
+                {
+                    _context.Genres.Update(genre);
+                    await _context.SaveChangesAsync();
+
+                    return entity;
+                }
+
             }
+
+            return null;
+
         }
     }
 }

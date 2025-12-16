@@ -7,151 +7,102 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VGLog.Data;
 using VGLog.Models;
+using VGLog.Services;
 
 namespace VGLog.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class SoftwareHouseController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly SoftwareHouseService _sHService;
 
-        public SoftwareHouseController(AppDbContext context)
+        public SoftwareHouseController(AppDbContext context, SoftwareHouseService softwareHouseService)
         {
             _context = context;
+            _sHService = softwareHouseService;
         }
 
-        // GET: SoftwareHouse
-        public async Task<IActionResult> Index()
+        [HttpGet("GetAll")]
+        public async Task<ActionResult<SoftwareHouse>> GetAllSHousesAsync()
         {
-            return View(await _context.SoftwareHouses.ToListAsync());
+            var result = await _sHService.GetAllAsync();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return NotFound();
         }
 
-        // GET: SoftwareHouse/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet("GetById/{id}")]
+        public async Task<ActionResult<SoftwareHouse>> GetByIdSHouses(int id)
         {
-            if (id == null)
+            var result = await _sHService.GetByIdAsync(id);
+
+            if (result != null)
             {
-                return NotFound();
+                return Ok(result);
             }
 
-            var softwareHouse = await _context.SoftwareHouses
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (softwareHouse == null)
-            {
-                return NotFound();
-            }
-
-            return View(softwareHouse);
+            return NotFound();
         }
 
-        // GET: SoftwareHouse/Create
-        public IActionResult Create()
+        [HttpPost("CreateSHouse")]
+        public async Task<ActionResult<SoftwareHouse>> CreateSHouses([FromBody] SoftwareHouse softwareHouse)
         {
-            return View();
-        }
-
-        // POST: SoftwareHouse/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Country,FoundedYear")] SoftwareHouse softwareHouse)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(softwareHouse);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(softwareHouse);
-        }
-
-        // GET: SoftwareHouse/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var softwareHouse = await _context.SoftwareHouses.FindAsync(id);
-            if (softwareHouse == null)
-            {
-                return NotFound();
-            }
-            return View(softwareHouse);
-        }
-
-        // POST: SoftwareHouse/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Country,FoundedYear")] SoftwareHouse softwareHouse)
-        {
-            if (id != softwareHouse.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(softwareHouse);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SoftwareHouseExists(softwareHouse.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(softwareHouse);
-        }
-
-        // GET: SoftwareHouse/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var softwareHouse = await _context.SoftwareHouses
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (softwareHouse == null)
-            {
-                return NotFound();
-            }
-
-            return View(softwareHouse);
-        }
-
-        // POST: SoftwareHouse/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var softwareHouse = await _context.SoftwareHouses.FindAsync(id);
             if (softwareHouse != null)
             {
-                _context.SoftwareHouses.Remove(softwareHouse);
+                var created = await _sHService.CreateAsync(softwareHouse);
+
+                if (created != null)
+                {
+                    return CreatedAtAction(
+                        nameof(GetByIdSHouses),
+                        new { id = created.Id },
+                        created
+                    );
+                }
+
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return BadRequest();
         }
 
-        private bool SoftwareHouseExists(int id)
+        [HttpDelete("DeleteSHouse/{id}")]
+        public async Task<ActionResult<SoftwareHouse>> DeleteSHouses(int id)
         {
-            return _context.SoftwareHouses.Any(e => e.Id == id);
+            var deleted = await _sHService.DeleteAsync(id);
+            if (deleted != null)
+            {
+                return CreatedAtAction(
+                    nameof(GetByIdSHouses),
+                    new { id = deleted.Id },
+                    deleted
+                );
+            }
+
+            return BadRequest();
+
+        }
+
+        [HttpPut("EditShouse")]
+        public async Task<ActionResult<SoftwareHouse>> UpdateSHouses([FromBody] SoftwareHouse softwareHouse)
+        {
+            var updated = await _sHService.UpdateAsync(softwareHouse);
+
+            if (updated != null)
+            {
+                return CreatedAtAction(
+                    nameof(GetByIdSHouses),
+                    new { id = updated.Id },
+                    updated
+                );
+            }
+
+            return BadRequest();
+
+
         }
     }
 }

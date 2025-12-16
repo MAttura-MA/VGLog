@@ -1,6 +1,10 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using VGLog.Components;
 using VGLog.Data;
+using VGLog.Models;
 using VGLog.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +22,49 @@ builder.Services.AddScoped<SoftwareHouseService>();
 builder.Services.AddScoped<PlatformService>();
 builder.Services.AddScoped<GenreService>();
 
+// 2) Identity configuration
+// AddIdentity registra UserManager, SignInManager, PasswordHasher, stores, token providers, options, ecc.
+// Internamente:
+// - registra implementazioni di IUserStore/IUserPasswordStore (EntityFramework stores)
+// - registra PasswordHasher (hash sicuro, salt, PBKDF2 per default in Microsoft impl.)
+// - registra UserValidators, PasswordValidators, SecurityStampValidator...
+// - registra SignInManager (responsabile di creare ClaimsPrincipal e invocare IAuthenticationService per la cookie)
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+
+    options.User.RequireUniqueEmail = true;
+
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+})
+    .AddEntityFrameworkStores<AppDbContext>() // registra i store EF
+    .AddDefaultTokenProviders(); // token provider usato per reset password, conferma email
+
+// 3) Configura cookie di Identity (Identity usa uno schema cookie predefinito "Identity.Application")
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+
+    // sicurezza cookie
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
+
+    options.Events = new CookieAuthenticationEvents
+    {
+
+    };
+});
+
+// 4) MVC / Razor
+builder.Services.AddControllersWithViews();
 
 
 //Registrazione del DbContext
@@ -35,6 +82,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+// routing deve essere registrato prima della auth endpoint mapping
+app.UseRouting();
+
+// authentication deve venire prima di authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 

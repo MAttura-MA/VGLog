@@ -5,6 +5,7 @@ using VGLog.Models;
 
 namespace VGLog.Services
 {
+
     public class SoftwareHouseService
     {
         private readonly AppDbContext _context;
@@ -20,40 +21,47 @@ namespace VGLog.Services
                 .ToListAsync();
         }
 
-        public async Task<SoftwareHouse> GetByIdAsync(int Id)
+        public async Task<SoftwareHouse?> GetByIdAsync(int Id)
         {
             
             return await _context.SoftwareHouses.FindAsync(Id);
                 
         }
 
-        public async Task CreateAsync(SoftwareHouse softwareHouse)
+        public async Task<SoftwareHouse> CreateAsync(SoftwareHouse softwareHouse)
         {
             _context.SoftwareHouses.Add(softwareHouse);
             await _context.SaveChangesAsync();
+            return softwareHouse;
 
         }
 
-        public async Task DeleteAsync(int Id)
+        public async Task<SoftwareHouse?> DeleteAsync(int Id)
         {
             var entity = await _context.SoftwareHouses.FindAsync(Id);
-
             if (entity != null)
             {
                 _context.SoftwareHouses.Remove(entity);
                 await _context.SaveChangesAsync();
+                return entity;
             }
+
+            return null;
+            
         }
 
-        public async Task UpdateAsync(SoftwareHouse softwareHouses)
+        public async Task<SoftwareHouse?> UpdateAsync(SoftwareHouse softwareHouses)
         {
-            var entity = await _context.Videogames.FindAsync(softwareHouses.Id);
+            var entity = await _context.SoftwareHouses.FindAsync(softwareHouses.Id);
 
             if (entity != null)
             {
                 _context.SoftwareHouses.Update(softwareHouses);
                 await _context.SaveChangesAsync();
+                return softwareHouses;
             }
+
+            return null;
         }
     }
 }

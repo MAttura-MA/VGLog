@@ -30,12 +30,9 @@ namespace VGLog.Services
         {
             if (platform != null)
             {
-
-            _context.Platforms.Add(platform);
-            await _context.SaveChangesAsync();
-
-            return platform;
-
+                _context.Platforms.Add(platform);
+                await _context.SaveChangesAsync();
+                return platform;
             }
 
             return null;

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VGLog.Models
 {
@@ -20,5 +21,10 @@ namespace VGLog.Models
 
         public int? SoftwareHouseId {  get; set; }
         public SoftwareHouse? SoftwareHouse { get; set; }
+
+        [Required]
+        public string UserId { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public ApplicationUser? User { get; set; }
     }
 }
