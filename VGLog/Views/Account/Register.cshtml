@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+
+@model VGLog.Models.RegisterViewModel
+<form asp-action="Register" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div>
+        <label for="Email">Email</label>
+        <input asp-for="Email" name="Email" type="email" id="Email" required />
+        <span style="color:red;" asp-validation-for="Email"></span>
+    </div>
+
+
+    <div>
+        <label for="DisplayName">Nickname</label>
+        <input asp-for="DisplayName" name="DisplayName" type="text" id="DisplayName" required />
+    </div>
+
+    <div>
+        <label asp-for="Password">Password</label>
+        <input asp-for="Password" name="Password" type="password" required minlength="6" />
+        <span asp-validation-for="Password" style="color:red;"></span>
+    </div>
+
+    <div>
+        <label asp-for="ConfirmPassword">Con pass</label>
+        <input asp-for="ConfirmPassword" name="ConfirmPassword" type="password" required minlength="6" />
+        <span asp-validation-for="ConfirmPassword" style="color:red;"></span>
+    </div>
+
+    <button type="submit">Register</button>
+</form>
+
+<script>
+    // Validazione lato client della conferma password
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const password = document.getElementById('Password').value;
+        const confirm = document.getElementById('ConfirmPassword').value;
+        if (password !== confirm) {
+            e.preventDefault();
+            alert('Le password non coincidono');
+        }
+    });
+</script>

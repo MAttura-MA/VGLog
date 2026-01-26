@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+
+@model VGLog.Models.LoginViewModel
+<form asp-action="Login" method="post">
+    @Html.AntiForgeryToken()
+
+    <div>
+        <label asp-for="Email">Email</label>
+        <input asp-for="Email" name="Email" type="email" required />
+        <span asp-validation-for="Email" style="color:red;"></span>
+    </div>
+
+    <div>
+        <label asp-for="Password">Pass</label>
+        <input asp-for="Password" name="Password" type="password" required minlength="6" />
+        <span asp-validation-for="Password" style="color:red;"></span>
+    </div>
+
+    <div>
+        <input asp-for="RememberMe" name="RememberMe" type="checkbox" />
+        <label asp-for="RememberMe"></label>
+    </div>
+
+    <button type="submit">Login</button>
+</form>
+
+<script>
+    // Debug per vedere se i valori arrivano
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const email = document.querySelector('input[name="Email"]').value;
+        const password = document.querySelector('input[name="Password"]').value;
+        console.log("Email:", email);
+        console.log("Password:", password ? "*****" : "null");
+    });
+</script>

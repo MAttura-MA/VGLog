@@ -1,26 +1,38 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using VGLog.Components;
 using VGLog.Data;
 using VGLog.Models;
 using VGLog.Services;
+using VGLog.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
 
 //Registrazione dei controller
 builder.Services.AddControllers();
 
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+builder.Services.AddControllersWithViews(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
+
+
 //Registrazione dei services
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<VideogameService>();
 builder.Services.AddScoped<SoftwareHouseService>();
 builder.Services.AddScoped<PlatformService>();
 builder.Services.AddScoped<GenreService>();
+
 
 // 2) Identity configuration
 // AddIdentity registra UserManager, SignInManager, PasswordHasher, stores, token providers, options, ecc.
@@ -84,6 +96,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+//app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
 // routing deve essere registrato prima della auth endpoint mapping
 app.UseRouting();
 
@@ -93,11 +107,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-
-app.UseAntiforgery();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.UseAntiforgery();
 
 app.Run();
