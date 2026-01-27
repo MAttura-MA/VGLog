@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using VGLog.Components;
+using VGLog.Views;
 using VGLog.Data;
 using VGLog.Models;
 using VGLog.Services;
 using VGLog.Services.Interfaces;
+using VGLog.Views.Home;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,9 @@ builder.Services.AddControllersWithViews(options =>
         .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
 });
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAntiforgery();
 
 
 //Registrazione dei services
@@ -96,7 +100,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-//app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 // routing deve essere registrato prima della auth endpoint mapping
 app.UseRouting();

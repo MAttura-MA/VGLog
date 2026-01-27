@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using VGLog.Models;
 using VGLog.Services.Interfaces;
+using System.Security.Claims;
 
 namespace VGLog.Services
 {
@@ -28,14 +29,12 @@ namespace VGLog.Services
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
-            if (!result.Succeeded)
+            if (result.Succeeded && !string.IsNullOrWhiteSpace(user.DisplayName))
             {
-                foreach (var error in result.Errors)
-                    Console.WriteLine($"Identity error: {error.Code} - {error.Description}");
-            }
-            else
-            {
-                Console.WriteLine($"Utente creato: {user.Email}");
+                await _userManager.AddClaimAsync(
+                    user,
+                    new Claim("DisplayName", user.DisplayName)
+                    );
             }
 
             return result;
@@ -43,6 +42,7 @@ namespace VGLog.Services
 
         public async Task<SignInResult> LoginAsync(LoginViewModel model)
         {
+
             return await _SignInManager.PasswordSignInAsync(
                 model.Email,
                 model.Password,

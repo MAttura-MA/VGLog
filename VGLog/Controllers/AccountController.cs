@@ -22,28 +22,6 @@ namespace VGLog.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> TestRegister()
-        {
-            var vm = new RegisterViewModel
-            {
-                Email = "test@examp45qasdasdweqwe1le.com",
-                DisplayName = "Tesasdqweqweaasdasdddaer",
-                Password = "password123asd"
-            };
-
-            var result = await _accountService.RegisterAsync(vm);
-
-            if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                return Content("Errore registrazione: " + errors);
-            }
-
-            return Content("Utente registrato correttamente");
-        }
-
-
-        [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
@@ -83,7 +61,7 @@ namespace VGLog.Controllers
         }
         
 
-    [AllowAnonymous]
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
@@ -108,13 +86,13 @@ namespace VGLog.Controllers
             return RedirectToAction("index", "home");
         }
 
-        [HttpPost]
+
+        [HttpPost("account/logout")]
         [ValidateAntiForgeryToken]
-        [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
             await _accountService.LogoutAsync();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("index", "home");
         }
     }
 }
