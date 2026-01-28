@@ -9,6 +9,8 @@ using VGLog.Services.Interfaces;
 
 namespace VGLog.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class AccountController : Controller
     {
         private readonly IAccountService _accountService;
@@ -77,13 +79,7 @@ namespace VGLog.Controllers
 
             var result = await _accountService.LoginAsync(model);
 
-            if (!result.Succeeded)
-            {
-                ModelState.AddModelError("", "Login fallito");
-                return View(model);
-            }
-
-            return RedirectToAction("index", "home");
+            return Ok(result.Succeeded);
         }
 
 

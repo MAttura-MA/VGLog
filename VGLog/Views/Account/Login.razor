@@ -1,0 +1,60 @@
+﻿@page "/account/login"
+
+@using Microsoft.AspNetCore.Components.Forms
+@using VGLog.Models
+@using VGLog.Services.Interfaces
+
+@inject NavigationManager Navigation
+@inject IAccountService AccountService
+
+<EditForm Model="@model" OnSubmit="HandleLogin" FormName="LoginFormBob">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <InputText @bind-Value="model.Email" class="form-control" id="Email" />
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <InputText @bind-Value="model.Password" type="password" class="form-control" id="Password" />
+    </div>
+
+    <div class="mb-3 form-check">
+        <InputCheckbox class="form-check-input" @bind-Value="model.RememberMe" id="Remember" />
+        <label for="remember" class="form-check-label">Remember me</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+
+</EditForm>
+
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    [SupplyParameterFromForm]
+    private LoginViewModel model { get; set; } = new LoginViewModel();
+
+    private string errorMessage = "";
+
+    private async Task HandleLogin()
+    {
+
+        var result = await AccountService.LoginAsync(model);
+
+        if (result.Succeeded)
+        {
+            Navigation.NavigateTo("/", true);
+        }
+        else
+        {
+            errorMessage = "Login fallito. Controlla email e password.";
+        }
+    }
+}

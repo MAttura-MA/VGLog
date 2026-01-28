@@ -10,6 +10,7 @@ using VGLog.Models;
 using VGLog.Services;
 using VGLog.Services.Interfaces;
 using VGLog.Views.Home;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,7 @@ builder.Services.AddControllersWithViews(options =>
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();
+builder.Services.AddHttpClient();
 
 
 //Registrazione dei services
