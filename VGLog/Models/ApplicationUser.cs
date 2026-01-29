@@ -6,5 +6,7 @@ namespace VGLog.Models
     {
         public string? DisplayName { get; set; }
 
+        public ICollection<UserGame> UserGames { get; set; } = new List<UserGame>();
+
     }
 }

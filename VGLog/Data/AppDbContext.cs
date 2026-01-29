@@ -11,6 +11,7 @@ namespace VGLog.Data
     
 
     public DbSet<Videogame> Videogames { get; set; }
+    public DbSet<UserGame> UserGames { get; set; }
     public DbSet<SoftwareHouse> SoftwareHouses {  get; set; }
     public DbSet<Genre> Genres { get; set; }
     public DbSet<Platform> Platforms { get; set; }
@@ -31,6 +32,22 @@ namespace VGLog.Data
                 .HasOne(v => v.SoftwareHouse)
                 .WithMany(sh => sh.Videogames)
                 .HasForeignKey(v => v.SoftwareHouseId);
+
+            modelBuilder.Entity<UserGame>()
+                .HasOne(ug => ug.Videogame)
+                .WithMany(u => u.UserGames)
+                .HasForeignKey(ug => ug.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGame>()
+                .HasOne(ug => ug.Videogame)
+                .WithMany(v => v.UserGames)
+                .HasForeignKey(ug => ug.VideogameId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserGame>()
+                .HasIndex(ug => new { ug.UserId, ug.VideogameId })
+                .IsUnique();
         }
             
     }

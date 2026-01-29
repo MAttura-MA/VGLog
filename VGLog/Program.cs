@@ -11,6 +11,7 @@ using VGLog.Services;
 using VGLog.Services.Interfaces;
 using VGLog.Views.Home;
 using Microsoft.AspNetCore.Components;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,13 @@ builder.Services.AddScoped<VideogameService>();
 builder.Services.AddScoped<SoftwareHouseService>();
 builder.Services.AddScoped<PlatformService>();
 builder.Services.AddScoped<GenreService>();
+
+
+//Registrazione di radzen.blazor
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<TooltipService>();
+builder.Services.AddScoped<ContextMenuService>();
 
 
 // 2) Identity configuration
