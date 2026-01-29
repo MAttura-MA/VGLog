@@ -15,7 +15,7 @@
             @if (isLoggedIn)
             {
                 <p>Hi @displayName!</p>
-                <form method="post" action="/account/logout">
+                <form method="post" action="auth/logout">
                     <input type="hidden" name="__RequestVerificationToken" value="@antiForgeryToken" />
                     <button type="submit" class="btn btn-link">Logout</button>
                 </form>

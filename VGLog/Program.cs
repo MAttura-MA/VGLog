@@ -14,10 +14,6 @@ using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Registrazione dei controller
-builder.Services.AddControllers();
-
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddControllersWithViews(options =>
 {
@@ -26,6 +22,8 @@ builder.Services.AddControllersWithViews(options =>
         .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
 });
+
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();
@@ -81,9 +79,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-// 4) MVC / Razor
-builder.Services.AddControllersWithViews();
-
 
 //Registrazione del DbContext
 builder.Services.AddDbContext <AppDbContext>(options =>
@@ -102,14 +97,18 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-
-// routing deve essere registrato prima della auth endpoint mapping
 app.UseRouting();
 
-// authentication deve venire prima di authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseAntiforgery();
+
+
+// routing deve essere registrato prima della auth endpoint mapping
+
+// authentication deve venire prima di authorization
+
 
 app.MapControllers();
 
@@ -117,7 +116,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+//app.MapRazorPages();
+app.MapBlazorHub();
 app.MapStaticAssets();
-app.UseAntiforgery();
 
 app.Run();

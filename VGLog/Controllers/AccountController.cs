@@ -82,13 +82,23 @@ namespace VGLog.Controllers
             return Ok(result.Succeeded);
         }
 
-
-        [HttpPost("account/logout")]
+        [Authorize]
+        [HttpPost("/auth/logout")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await _accountService.LogoutAsync();
-            return RedirectToAction("index", "home");
+            try
+            {
+                await _accountService.LogoutAsync();
+                return Redirect("/");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating an offer for User {UserId}.", User?.Identity?.Name ?? "Unknown");
+                ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again later.");
+                return BadRequest();
+            }
         }
     }
 }

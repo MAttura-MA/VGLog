@@ -53,6 +53,7 @@ namespace VGLog.Services
         public async Task LogoutAsync()
         {
             await _SignInManager.SignOutAsync();
+            
         }
     }
 }
