@@ -1,8 +1,13 @@
 ﻿@page "/account/register"
+
 @using Microsoft.AspNetCore.Components.Forms
 @using VGLog.Models
+@using VGLog.Services.Interfaces
+
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IAccountService AccountService
+
 
 <h3>Register</h3>
 
@@ -11,40 +16,52 @@
     <ValidationSummary />
 
     <div>
-        <label>Email</label>
-        <input @bind-="model.Email" />
+        <label for="email" class="form-label">Email</label>
+        <InputText @bind-Value="model.Email" class="form-control" id="Email" />
     </div>
 
     <div>
-        <label>Display name</label>
-        <input @bind-="model.Displayname" />
+        <label for="DisplayName" class="form-label">Display name</label>
+        <InputText @bind-Value="model.DisplayName" class="form-control" id="DisplayName" />
     </div>
 
     <div>
-        <label>Password</label>
-        <input type="password" @bind="model.Password" />
+        <label for="Password" class="form-label">Password</label>
+        <InputText type="password" @bind-Value="model.Password" class="form-control" id="Password" />
     </div>
 
     <div>
-        <label>Confirm password</label>
-        <input type="password" @bind="model.ConfirmPassword" />
+        <label for="ConfirmPassword" class="form-label">Confirm password</label>
+        <InputText type="password" @bind-Value="model.ConfirmPassword" class="form-control" id="ConfirmPassword" />
     </div>
 
     <button type="submit">Register</button>
 
 </EditForm>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
 @code {
-    private RegisterViewModel model = new();
+
+    [SupplyParameterFromForm]
+    private RegisterViewModel model { get; set; } = new RegisterViewModel();
+
+    private string errorMessage = "";
 
     private async Task HandleRegister()
     {
-        var response = await Http.PostAsJsonAsync("/account/register", model);
-        Console.WriteLine($"Email: '{model.Email}', Password: '{model.Password}'");
+        var response = await AccountService.RegisterAsync(model);
 
-        if (response.IsSuccessStatusCode)
+        if (response.Succeeded)
         {
-            Navigation.NavigateTo("/account/login", forceLoad: true);
+            Navigation.NavigateTo("/account/login", true);
+        }
+        else
+        {
+            errorMessage = "Registrazione fallita. Email non unica o password non combaciante";
         }
     }
 }
