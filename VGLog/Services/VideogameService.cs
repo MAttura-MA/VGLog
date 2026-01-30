@@ -20,7 +20,7 @@ namespace VGLog.Services
             _userManager = userManager;
         }
 
-        public async Task<IEnumerable<Videogame>> GetAllAsync()
+        public async Task<List<Videogame>> GetAllAsync()
         {
             return await _context.Videogames
                 .ToListAsync();

@@ -1,0 +1,32 @@
+﻿@* @page "/" 
+@namespace VGLog
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <title>VGLog</title>
+
+    <!-- CSS -->
+    <link href="lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+    <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+</head>
+<body>
+    <app>
+        <!-- Qui viene caricato il componente root App.razor -->
+        <component type="typeof(VGLog.Components.App)" render-mode="ServerPrerendered" />
+    </app>
+
+    <!-- JS -->
+    <script src="_framework/blazor.server.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+</body>
+</html>
+ *@

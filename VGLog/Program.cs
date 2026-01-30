@@ -9,9 +9,10 @@ using VGLog.Data;
 using VGLog.Models;
 using VGLog.Services;
 using VGLog.Services.Interfaces;
-using VGLog.Views.Home;
 using Microsoft.AspNetCore.Components;
 using Radzen;
+using VGLog;
+using VGLog.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,10 +125,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapStaticAssets();
+
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 //app.MapRazorPages();
 app.MapBlazorHub();
-app.MapStaticAssets();
 
 app.Run();
