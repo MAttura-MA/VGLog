@@ -1,7 +1,5 @@
-﻿@page "/account/profile"
-@attribute [StreamRendering]
-@inherits LayoutComponentBase
-
+@page "/account/profile"
+@rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
 @using Radzen
 @using Radzen.Blazor
@@ -9,26 +7,24 @@
 @using VGLog.Models
 @using VGLog.Services
 @using Microsoft.AspNetCore.Components.Authorization
-
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject VGLog.Services.VideogameService VideogameService
 @inject Radzen.NotificationService NotificationService
-@inject VGLog.Data.AppDbContext AppDbContext 
-
+@inject VGLog.Data.AppDbContext AppDbContext
 
 <h3>Profile</h3>
-
 <h3>Add a played videogame</h3>
 
-<RadzenDropDown Data=@LoadGames
-                @bind-Value=@SelectedGameId
-                TValue="int?"
-                TextProperty="@nameof(Videogame.Title)"
-                ValueProperty="@nameof(Videogame.Id)"
+<RadzenDropDown @bind-Value="@SelectedGameId"
+                Data="@LoadGames"
+                TextProperty="Title"
+                ValueProperty="Id"
                 Placeholder="Seleziona un gioco..."
                 Change="@OnGameSelected"
-                Name="VideogameDropDown">
+                Style="width: 300px; position: relative; visibility: visible">
 </RadzenDropDown>
+
+@* resto del codice... *@
 
 
 @if (SelectedGame != null)
