@@ -1,4 +1,5 @@
 @page "/account/profile"
+@attribute [Authorize]
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
 @using Radzen
@@ -12,19 +13,21 @@
 @inject Radzen.NotificationService NotificationService
 @inject VGLog.Data.AppDbContext AppDbContext
 
+<RadzenNotification />
+
 <h3>Profile</h3>
 <h3>Add a played videogame</h3>
 
 <RadzenDropDown @bind-Value="@SelectedGameId"
-                Data="@LoadGames"
-                TextProperty="Title"
-                ValueProperty="Id"
-                Placeholder="Seleziona un gioco..."
-                Change="@OnGameSelected"
-                Style="width: 300px; position: relative; visibility: visible">
+Data="@LoadGames"
+TextProperty="Title"
+ValueProperty="Id"
+Placeholder="Seleziona un gioco..."
+Change="@OnGameSelected"
+Style="width: 300px; position: relative; visibility: visible">
 </RadzenDropDown>
 
-@* resto del codice... *@
+<InputText Placeholder="Add your notes" @bind-Value="@SelectedNotes"/>
 
 
 @if (SelectedGame != null)
@@ -38,20 +41,24 @@
 }
 
 <h3 class="mt-4">Your games</h3>
-<RadzenDataGrid Data="@UserGames" TItem="UserGame" RowSelect="OnSelectRow">
+<RadzenDataGrid Data="@UserGames" TItem="UserGame">
     <Columns>
-        <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Gioco" />
+        <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Game" />
         <RadzenDataGridColumn TItem="UserGame" Property="PersonalRating" Title="Rating" />
+        <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" />
+
     </Columns>
 </RadzenDataGrid>
 
 @code {
     public List<Videogame> LoadGames = new();
     private List<UserGame> UserGames { get; set; } = new();
+    private bool checkSelectedUserGame;
 
     private int? SelectedGameId { get; set; }
     private Videogame? SelectedGame { get; set; }
     private int SelectedRating { get; set; } = 1;
+    private string? SelectedNotes { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,6 +82,7 @@
         {
             SelectedGame = LoadGames.FirstOrDefault(g => g.Id == SelectedGameId.Value);
             SelectedRating = 1;
+            SelectedNotes = "";
         }
         else
         {
@@ -87,18 +95,32 @@
     {
         if (SelectedGame == null) return;
 
+
         try
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
 
-            await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, user);
+            bool alreadyExists = UserGames.Any(ug => ug.Videogame.Id == SelectedGame.Id);
+
+            if (alreadyExists == true)
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Warning,
+                    "Game already present",
+                    $"{SelectedGame.Title} is already in your profile!");
+                    return;
+            }
+
+            await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user);
 
             NotificationService.Notify(NotificationSeverity.Success, "Game added correctly", $"You've added {SelectedGame.Title} to your profile!");
 
             SelectedGame = null;
             SelectedGameId = null;
             SelectedRating = 1;
+            SelectedNotes = "";
+            
 
             await LoadUserGames();
         }
@@ -108,9 +130,6 @@
         }
     }
 
-    private void OnSelectRow(UserGame ug)
-    {
-        SelectedGame = ug.Videogame;
-    }
+   
 
 }
