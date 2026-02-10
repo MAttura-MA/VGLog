@@ -14,8 +14,6 @@ namespace VGLog.Models
         public int? ReleaseYear { get; set; }
         public byte? Image { get; set; }
 
-        public GameStatus Status { get; set; }
-
         public List<Genre> Genres { get; set; } = new();
         public List<Platform> Platforms { get; set; } = new();
 

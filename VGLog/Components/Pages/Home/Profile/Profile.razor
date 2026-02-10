@@ -4,6 +4,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using Radzen
 @using Radzen.Blazor
+@using System.Reflection
+@using System.ComponentModel.DataAnnotations
 @using VGLog.Data
 @using VGLog.Models
 @using VGLog.Services
@@ -12,6 +14,8 @@
 @inject VGLog.Services.VideogameService VideogameService
 @inject Radzen.NotificationService NotificationService
 @inject VGLog.Data.AppDbContext AppDbContext
+@inject NavigationManager NavigationManager
+
 
 <RadzenNotification />
 
@@ -22,22 +26,41 @@
 Data="@LoadGames"
 TextProperty="Title"
 ValueProperty="Id"
-Placeholder="Seleziona un gioco..."
+Placeholder="Select a game..."
 Change="@OnGameSelected"
 Style="width: 300px; position: relative; visibility: visible">
 </RadzenDropDown>
 
-<InputText Placeholder="Add your notes" @bind-Value="@SelectedNotes"/>
 
 
 @if (SelectedGame != null)
 {
     <div class="mt-2">
-        <RadzenLabel Text="Rating (1-10)" />
-        <RadzenNumeric @bind-Value="SelectedRating" Min="1" Max="10" Style="width:80px" />
-
-        <RadzenButton Text="Add to the profile" Click="AddGame" Style="margin-left:10px" />
+        <RadzenDropDown
+        @bind-Value="@PlayedOrNot"
+        Data="@GameStatuses"
+        Placeholder="Game Status"
+        TextProperty="Value"
+        ValueProperty="Key">
+        </RadzenDropDown>
     </div>
+    @if (PlayedOrNot == GameStatus.Playing)
+    {
+        <RadzenNumeric Placeholder="Add your time played" @bind-Value="@HoursPlayed" />
+
+    }
+    @if (PlayedOrNot == GameStatus.Completed)
+    {
+        <div class="mt-2">
+            <RadzenLabel Text="Rating (1-10)" />
+            <RadzenNumeric @bind-Value="SelectedRating" Min="1" Max="10" Style="width:80px" />
+            <InputText Placeholder="Add your notes" @bind-Value="@SelectedNotes"/>
+            <RadzenNumeric Placeholder="Add your time played" @bind-Value="@HoursPlayed" />
+
+        </div>
+
+    }
+    <RadzenButton Text="Add to the profile" Click="AddGame" Style="margin-left:10px" />
 }
 
 <h3 class="mt-4">Your games</h3>
@@ -46,6 +69,9 @@ Style="width: 300px; position: relative; visibility: visible">
         <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Game" />
         <RadzenDataGridColumn TItem="UserGame" Property="PersonalRating" Title="Rating" />
         <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" />
+        <RadzenDataGridColumn TItem="UserGame" Property="GameStatus" Title="Game Status" />
+        <RadzenDataGridColumn TItem="UserGame" Property="HoursPlayed" Title="Hours played" />
+
 
     </Columns>
 </RadzenDataGrid>
@@ -53,12 +79,24 @@ Style="width: 300px; position: relative; visibility: visible">
 @code {
     public List<Videogame> LoadGames = new();
     private List<UserGame> UserGames { get; set; } = new();
+    protected List<KeyValuePair<GameStatus, string>> GameStatuses =
+    Enum.GetValues<GameStatus>()
+        .Select(e => new KeyValuePair<GameStatus, string>(
+            e,
+            e.GetType()
+             .GetMember(e.ToString())[0]
+             .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
+        ))
+        .ToList();
+
     private bool checkSelectedUserGame;
 
+    private GameStatus PlayedOrNot { get; set; }
     private int? SelectedGameId { get; set; }
     private Videogame? SelectedGame { get; set; }
     private int SelectedRating { get; set; } = 1;
     private string? SelectedNotes { get; set; }
+    private int? HoursPlayed { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,7 +150,7 @@ Style="width: 300px; position: relative; visibility: visible">
                     return;
             }
 
-            await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user);
+            await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
 
             NotificationService.Notify(NotificationSeverity.Success, "Game added correctly", $"You've added {SelectedGame.Title} to your profile!");
 
@@ -122,7 +160,7 @@ Style="width: 300px; position: relative; visibility: visible">
             SelectedNotes = "";
             
 
-            await LoadUserGames();
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
         catch (Exception ex)
         {

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VGLog.Data;
 
@@ -10,9 +11,11 @@ using VGLog.Data;
 namespace VGLog.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210171552_addhoursplayed")]
+    partial class addhoursplayed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.11");
@@ -308,7 +311,7 @@ namespace VGLog.Migrations
                     b.Property<int>("GameStatus")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("HoursPlayed")
+                    b.Property<int>("HoursPlayed")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Notes")

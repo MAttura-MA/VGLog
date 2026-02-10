@@ -75,7 +75,7 @@ namespace VGLog.Services
             return null;
         }
 
-        public async Task<UserGame> AddGameToUserAsync(int videogameId, int? personalRating, string? notes, ClaimsPrincipal user)
+        public async Task<UserGame> AddGameToUserAsync(int videogameId, int? personalRating, string? notes, ClaimsPrincipal user, GameStatus PlayedOrNot, int? HoursPlayed)
         {
             var userId = _userManager.GetUserId(user);
 
@@ -97,6 +97,8 @@ namespace VGLog.Services
                     PersonalRating = personalRating,
                     Completed = personalRating.HasValue,
                     CompletedAt = personalRating.HasValue ? DateTime.Now : null,
+                    GameStatus = PlayedOrNot,
+                    HoursPlayed = HoursPlayed,
                     Notes = notes
                 };
 
