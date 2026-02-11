@@ -15,7 +15,10 @@
 @inject Radzen.NotificationService NotificationService
 @inject VGLog.Data.AppDbContext AppDbContext
 @inject NavigationManager NavigationManager
+@inject DialogService DialogService
 
+
+<RadzenDialog />
 
 <RadzenNotification />
 
@@ -71,6 +74,14 @@ Style="width: 300px; position: relative; visibility: visible">
         <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" />
         <RadzenDataGridColumn TItem="UserGame" Property="GameStatus" Title="Game Status" />
         <RadzenDataGridColumn TItem="UserGame" Property="HoursPlayed" Title="Hours played" />
+        <RadzenDataGridColumn TItem="UserGame" Title="Actions">
+            <Template Context="item">
+                <RadzenButton
+                Text="Edit"
+                Size="ButtonSize.Small"
+                Click="@(async () => await OpenEditDialog(item))" />
+            </Template>
+        </RadzenDataGridColumn>
 
 
     </Columns>
@@ -147,7 +158,7 @@ Style="width: 300px; position: relative; visibility: visible">
                     NotificationSeverity.Warning,
                     "Game already present",
                     $"{SelectedGame.Title} is already in your profile!");
-                    return;
+                return;
             }
 
             await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
@@ -158,7 +169,7 @@ Style="width: 300px; position: relative; visibility: visible">
             SelectedGameId = null;
             SelectedRating = 1;
             SelectedNotes = "";
-            
+
 
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
@@ -168,6 +179,24 @@ Style="width: 300px; position: relative; visibility: visible">
         }
     }
 
-   
+    private async Task EditHours(UserGame item)
+    {
+        await VideogameService.EditUserGame(item.Id, item.HoursPlayed);
+    }
+
+    private async Task OpenEditDialog(UserGame item)
+    {
+        var result = await DialogService.OpenAsync<EditUserGameDialog>(
+            "Edit hours",
+            new Dictionary<string, object>
+            {
+                { "UserGame", item }
+            });
+
+        if (result == true)
+        {
+            await LoadUserGames();
+        }
+    }
 
 }

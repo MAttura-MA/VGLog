@@ -131,6 +131,19 @@ namespace VGLog.Services
                 .ToListAsync();
         }
 
+        public async Task EditUserGame(int userGameId, int? hours)
+        {
+            var result = await _context.UserGames
+                .FirstOrDefaultAsync(u => u.Id == userGameId);
+
+            if (result == null)
+                return;
+
+            result.HoursPlayed = hours;
+
+            await _context.SaveChangesAsync();
+        }
+
 
     }
 }

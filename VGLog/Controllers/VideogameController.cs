@@ -94,5 +94,22 @@ namespace VGLog.Controllers
 
 
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUserGame(int id, [FromBody] UserGame userGame)
+        {
+            var result = await _context.UserGames.FindAsync(id);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            result.Id = userGame.Id;
+            
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

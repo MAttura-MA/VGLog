@@ -1,0 +1,49 @@
+﻿@using VGLog.Models
+@using VGLog.Services
+@inject DialogService DialogService
+@inject VideogameService VideogameService
+
+<RadzenTemplateForm TItem="UserGame" data="@UserGame" Submit="@OnSubmit">
+    <div class="p-3">
+        <RadzenLabel Text="Hours played" />
+        <RadzenNumeric @bind-Value="UserGame.HoursPlayed"
+        Style="width:100%" />
+
+        <RadzenLabel Text="Notes" />
+        <InputText @bind-Value="UserGame.Notes"
+                   Style="width:100%" />
+
+        <RadzenLabel Text="rating" />
+        <RadzenNumeric @bind-Value="UserGame.PersonalRating" Min="1" Max="10"
+                   Style="width:100%" />
+        <div class="mt-3"
+        >
+            <RadzenButton Text="Cancel"
+            Click="@Close"
+            ButtonStyle="ButtonStyle.Secondary" />
+
+            <RadzenButton Text="Save"
+            ButtonType="ButtonType.Submit"
+            Style="margin-right:10px" />
+
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+
+@code {
+    [Parameter]
+    public UserGame UserGame { get; set; }
+
+    private async Task OnSubmit(UserGame userGame)
+    {
+        await VideogameService.EditUserGame(userGame.Id, userGame.HoursPlayed);
+
+        DialogService.Close(true);
+    }
+
+    private void Close()
+    {
+        DialogService.Close(false);
+    }
+}
