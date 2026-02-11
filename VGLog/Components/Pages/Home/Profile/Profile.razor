@@ -23,6 +23,10 @@
 <RadzenNotification />
 
 <h3>Profile</h3>
+<h3>Videogame counter </h3>
+
+<p>Hai registrato <RadzenLabel Text="@gameCounter" /> giochi</p>
+
 <h3>Add a played videogame</h3>
 
 <RadzenDropDown @bind-Value="@SelectedGameId"
@@ -102,6 +106,7 @@ Style="width: 300px; position: relative; visibility: visible">
 
     private bool checkSelectedUserGame;
 
+    private string gameCounter;
     private GameStatus PlayedOrNot { get; set; }
     private int? SelectedGameId { get; set; }
     private Videogame? SelectedGame { get; set; }
@@ -112,6 +117,9 @@ Style="width: 300px; position: relative; visibility: visible">
     protected override async Task OnInitializedAsync()
     {
         LoadGames = await VideogameService.GetAllAsync();
+
+        await countOfUserGames();
+
         await LoadUserGames();
     }
 
@@ -197,6 +205,17 @@ Style="width: 300px; position: relative; visibility: visible">
         {
             await LoadUserGames();
         }
+    }
+
+    private async Task countOfUserGames()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+        var count = await VideogameService.GetUserGamesCountAsync(user);
+
+        gameCounter = count.ToString();
     }
 
 }

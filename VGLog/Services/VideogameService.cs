@@ -144,6 +144,14 @@ namespace VGLog.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<int> GetUserGamesCountAsync(ClaimsPrincipal user)
+        {
+            var userId = _userManager.GetUserId(user);
+
+            return await _context.UserGames
+                .CountAsync(ug => ug.UserId == userId);
+        }
+
 
     }
 }
