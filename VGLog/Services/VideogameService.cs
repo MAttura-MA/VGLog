@@ -112,15 +112,29 @@ namespace VGLog.Services
 
         }
 
-        public async Task<List<UserGame>> GetUserGamesAsync(ClaimsPrincipal user)
+        public async Task<GetUserGamesDto> GetUserGamesWithCounterAsync(ClaimsPrincipal user)
         {
             var userId = _userManager.GetUserId(user);
 
-            return await _context.UserGames
+            var userGames = await _context.UserGames
                 .Include(ug => ug.Videogame)
                 .Where(ug =>  ug.UserId == userId)
                 .ToListAsync();
+
+            var dto = new GetUserGamesDto
+            {
+                Games = userGames,
+                Total = userGames.Count,
+                Completed = userGames.Count(g => g.GameStatus == GameStatus.Completed),
+                Playing = userGames.Count(g => g.GameStatus == GameStatus.Playing),
+                ToPlay = userGames.Count(g => g.GameStatus == GameStatus.Toplay)
+            };
+
+            return dto;
         }
+
+ 
+
 
         public async Task<List<Videogame>> SearchGamesAsync(string query)
         {
@@ -131,27 +145,50 @@ namespace VGLog.Services
                 .ToListAsync();
         }
 
-        public async Task EditUserGame(int userGameId, int? hours)
+        public async Task EditUserGameAsync(UpdateUserGameDto dto)
         {
-            var result = await _context.UserGames
-                .FirstOrDefaultAsync(u => u.Id == userGameId);
+            var userGame = await _context.UserGames
+                .FirstOrDefaultAsync(u => u.Id == dto.Id);
 
-            if (result == null)
+            if (userGame == null)
                 return;
 
-            result.HoursPlayed = hours;
+            userGame.HoursPlayed = dto.HoursPlayed;
+            userGame.Notes = dto.Notes;
+            userGame.PersonalRating = dto.PersonalRating;
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task<int> GetUserGamesCountAsync(ClaimsPrincipal user)
+        public async Task EditUserGameStatusAsync(int userGameId, GameStatus newStatus)
         {
-            var userId = _userManager.GetUserId(user);
+            var userGame = await _context.UserGames
+                .FirstOrDefaultAsync(u => u.Id == userGameId);
 
-            return await _context.UserGames
-                .CountAsync(ug => ug.UserId == userId);
+            if (userGame == null) return;
+
+            userGame.GameStatus = newStatus;
+
+            await _context.SaveChangesAsync();
         }
 
+
+        public async Task<UserGame?> DeleteUserGameAsync(int Id)
+        {
+            var entity = await _context.UserGames.FindAsync(Id);
+
+            if (entity != null)
+            {
+                _context.UserGames.Remove(entity);
+                await _context.SaveChangesAsync();
+                return entity;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return null;
+
+        }
 
     }
 }

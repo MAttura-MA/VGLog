@@ -6,15 +6,15 @@
 @using Radzen.Blazor
 @using System.Reflection
 @using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
 @using VGLog.Data
 @using VGLog.Models
 @using VGLog.Services
 @using Microsoft.AspNetCore.Components.Authorization
+@using VGLog.Services.DTOs
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject VGLog.Services.VideogameService VideogameService
 @inject Radzen.NotificationService NotificationService
-@inject VGLog.Data.AppDbContext AppDbContext
-@inject NavigationManager NavigationManager
 @inject DialogService DialogService
 
 
@@ -25,17 +25,20 @@
 <h3>Profile</h3>
 <h3>Videogame counter </h3>
 
-<p>Hai registrato <RadzenLabel Text="@gameCounter" /> giochi</p>
+<p>Total of @ProfileData.Total games</p>
+<p>Total of completed games: @ProfileData.Completed</p>
+<p>Total of playing: @ProfileData.Playing</p>
+<p>Total of to play games: @ProfileData.ToPlay</p>
 
 <h3>Add a played videogame</h3>
 
 <RadzenDropDown @bind-Value="@SelectedGameId"
-Data="@LoadGames"
-TextProperty="Title"
-ValueProperty="Id"
-Placeholder="Select a game..."
-Change="@OnGameSelected"
-Style="width: 300px; position: relative; visibility: visible">
+                Data="@AvailableGames"
+                TextProperty="Title"
+                ValueProperty="Id"
+                Placeholder="Select a game..."
+                Change="@OnGameSelected"
+                Style="width: 300px; position: relative; visibility: visible">
 </RadzenDropDown>
 
 
@@ -43,8 +46,7 @@ Style="width: 300px; position: relative; visibility: visible">
 @if (SelectedGame != null)
 {
     <div class="mt-2">
-        <RadzenDropDown
-        @bind-Value="@PlayedOrNot"
+        <RadzenDropDown @bind-Value="@PlayedOrNot"
         Data="@GameStatuses"
         Placeholder="Game Status"
         TextProperty="Value"
@@ -61,7 +63,7 @@ Style="width: 300px; position: relative; visibility: visible">
         <div class="mt-2">
             <RadzenLabel Text="Rating (1-10)" />
             <RadzenNumeric @bind-Value="SelectedRating" Min="1" Max="10" Style="width:80px" />
-            <InputText Placeholder="Add your notes" @bind-Value="@SelectedNotes"/>
+            <InputText Placeholder="Add your notes" @bind-Value="@SelectedNotes" />
             <RadzenNumeric Placeholder="Add your time played" @bind-Value="@HoursPlayed" />
 
         </div>
@@ -71,19 +73,24 @@ Style="width: 300px; position: relative; visibility: visible">
 }
 
 <h3 class="mt-4">Your games</h3>
-<RadzenDataGrid Data="@UserGames" TItem="UserGame">
+<RadzenDataGrid Data="@UserGames" TItem="UserGame" AllowSorting="true" >
     <Columns>
         <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Game" />
         <RadzenDataGridColumn TItem="UserGame" Property="PersonalRating" Title="Rating" />
-        <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" />
+        <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" Sortable="false" />
         <RadzenDataGridColumn TItem="UserGame" Property="GameStatus" Title="Game Status" />
         <RadzenDataGridColumn TItem="UserGame" Property="HoursPlayed" Title="Hours played" />
-        <RadzenDataGridColumn TItem="UserGame" Title="Actions">
+        <RadzenDataGridColumn TItem="UserGame" Title="Actions" Sortable="false">
             <Template Context="item">
-                <RadzenButton
-                Text="Edit"
+                <RadzenButton Text="Edit"
                 Size="ButtonSize.Small"
                 Click="@(async () => await OpenEditDialog(item))" />
+                <RadzenButton Text="Drop"
+                Size="ButtonSize.Small"
+                Click="@(() => MarkAsdropped(item))" />
+                <RadzenButton Text="Delete"
+                Size="ButtonSize.Small"
+                Click="@(() => DeleteUserGame(item))" />
             </Template>
         </RadzenDataGridColumn>
 
@@ -92,7 +99,7 @@ Style="width: 300px; position: relative; visibility: visible">
 </RadzenDataGrid>
 
 @code {
-    public List<Videogame> LoadGames = new();
+    public List<Videogame> AvailableGames = new();
     private List<UserGame> UserGames { get; set; } = new();
     protected List<KeyValuePair<GameStatus, string>> GameStatuses =
     Enum.GetValues<GameStatus>()
@@ -104,9 +111,12 @@ Style="width: 300px; position: relative; visibility: visible">
         ))
         .ToList();
 
-    private bool checkSelectedUserGame;
+    private UpdateUserGameDto EditDto { get; set; }
 
-    private string gameCounter;
+    private bool checkSelectedUserGame;
+    private AuthenticationState? authState;
+    private ClaimsPrincipal? user;
+    private GetUserGamesDto? ProfileData;
     private GameStatus PlayedOrNot { get; set; }
     private int? SelectedGameId { get; set; }
     private Videogame? SelectedGame { get; set; }
@@ -116,20 +126,20 @@ Style="width: 300px; position: relative; visibility: visible">
 
     protected override async Task OnInitializedAsync()
     {
-        LoadGames = await VideogameService.GetAllAsync();
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-        await countOfUserGames();
+        user = authState.User;
+
+        AvailableGames = await VideogameService.GetAllAsync();
 
         await LoadUserGames();
     }
 
     private async Task LoadUserGames()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-        var user = authState.User;
-
-        UserGames = await VideogameService.GetUserGamesAsync(user);
+        ProfileData = await VideogameService.GetUserGamesWithCounterAsync(user);
+        UserGames = ProfileData.Games;
 
     }
 
@@ -137,7 +147,7 @@ Style="width: 300px; position: relative; visibility: visible">
     {
         if (SelectedGameId.HasValue)
         {
-            SelectedGame = LoadGames.FirstOrDefault(g => g.Id == SelectedGameId.Value);
+            SelectedGame = AvailableGames.FirstOrDefault(g => g.Id == SelectedGameId.Value);
             SelectedRating = 1;
             SelectedNotes = "";
         }
@@ -153,11 +163,17 @@ Style="width: 300px; position: relative; visibility: visible">
         if (SelectedGame == null) return;
 
 
+        if (PlayedOrNot == GameStatus.Completed && (!HoursPlayed.HasValue || HoursPlayed.Value <= 0))
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Warning,
+                "Invalid input",
+                "For completed games, Hours played must be greater than 0"
+            );
+            return;
+        }
         try
         {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-
             bool alreadyExists = UserGames.Any(ug => ug.Videogame.Id == SelectedGame.Id);
 
             if (alreadyExists == true)
@@ -170,6 +186,7 @@ Style="width: 300px; position: relative; visibility: visible">
             }
 
             await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
+            await LoadUserGames();
 
             NotificationService.Notify(NotificationSeverity.Success, "Game added correctly", $"You've added {SelectedGame.Title} to your profile!");
 
@@ -177,9 +194,10 @@ Style="width: 300px; position: relative; visibility: visible">
             SelectedGameId = null;
             SelectedRating = 1;
             SelectedNotes = "";
+            PlayedOrNot = default;
+            HoursPlayed = null;
 
 
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
         catch (Exception ex)
         {
@@ -187,19 +205,18 @@ Style="width: 300px; position: relative; visibility: visible">
         }
     }
 
-    private async Task EditHours(UserGame item)
-    {
-        await VideogameService.EditUserGame(item.Id, item.HoursPlayed);
-    }
+
+
+
 
     private async Task OpenEditDialog(UserGame item)
     {
         var result = await DialogService.OpenAsync<EditUserGameDialog>(
             "Edit hours",
             new Dictionary<string, object>
-            {
+                    {
                 { "UserGame", item }
-            });
+                    });
 
         if (result == true)
         {
@@ -207,15 +224,33 @@ Style="width: 300px; position: relative; visibility: visible">
         }
     }
 
-    private async Task countOfUserGames()
+    private async Task MarkAsdropped(UserGame item)
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-        var user = authState.User;
+        await VideogameService.EditUserGameStatusAsync(item.Id, GameStatus.Dropped);
 
-        var count = await VideogameService.GetUserGamesCountAsync(user);
+        item.GameStatus = GameStatus.Dropped;
 
-        gameCounter = count.ToString();
+        StateHasChanged();
+    }
+
+    private async Task DeleteUserGame(UserGame item)
+    {
+        bool? confirmed = await DialogService.Confirm(
+                $"Are you sure you want to delete {item.Videogame.Title}?",
+                "Confirm Delete",
+                new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+
+        if (!confirmed.HasValue || !confirmed.Value)
+            return;
+
+        await VideogameService.DeleteUserGameAsync(item.Id);
+
+        UserGames.Remove(item);
+
+        StateHasChanged();
+
+        NotificationService.Notify(NotificationSeverity.Success, "Deleted", $"{item.Videogame.Title} removed from your profile.");
     }
 
 }

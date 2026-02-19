@@ -1,21 +1,22 @@
 ﻿@using VGLog.Models
 @using VGLog.Services
+@using VGLog.Services.DTOs
 @inject DialogService DialogService
 @inject VideogameService VideogameService
 
-<RadzenTemplateForm TItem="UserGame" data="@UserGame" Submit="@OnSubmit">
+<RadzenTemplateForm TItem="UpdateUserGameDto" data="@EditDto" Submit="@OnSubmit">
     <div class="p-3">
         <RadzenLabel Text="Hours played" />
-        <RadzenNumeric @bind-Value="UserGame.HoursPlayed"
+        <RadzenNumeric @bind-Value="EditDto.HoursPlayed"
         Style="width:100%" />
 
         <RadzenLabel Text="Notes" />
-        <InputText @bind-Value="UserGame.Notes"
-                   Style="width:100%" />
+        <InputText @bind-Value="EditDto.Notes"
+        Style="width:100%" />
 
-        <RadzenLabel Text="rating" />
-        <RadzenNumeric @bind-Value="UserGame.PersonalRating" Min="1" Max="10"
-                   Style="width:100%" />
+        <RadzenLabel Text="Rating" />
+        <RadzenNumeric @bind-Value="EditDto.PersonalRating" Min="1" Max="10"
+        Style="width:100%" />
         <div class="mt-3"
         >
             <RadzenButton Text="Cancel"
@@ -35,9 +36,22 @@
     [Parameter]
     public UserGame UserGame { get; set; }
 
-    private async Task OnSubmit(UserGame userGame)
+    private UpdateUserGameDto EditDto { get; set; }
+
+    protected override void OnInitialized()
     {
-        await VideogameService.EditUserGame(userGame.Id, userGame.HoursPlayed);
+        EditDto = new UpdateUserGameDto
+            {
+                Id = UserGame.Id,
+                HoursPlayed = UserGame.HoursPlayed,
+                Notes = UserGame.Notes,
+                PersonalRating = UserGame.PersonalRating,
+                GameStatus = UserGame.GameStatus
+            };
+    }
+    private async Task OnSubmit(UpdateUserGameDto dto)
+    {
+        await VideogameService.EditUserGameAsync(dto);
 
         DialogService.Close(true);
     }
