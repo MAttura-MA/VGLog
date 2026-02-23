@@ -35,7 +35,15 @@
         <InputText type="password" @bind-Value="model.ConfirmPassword" class="form-control" id="ConfirmPassword" />
     </div>
 
-    <button type="submit">Register</button>
+    <div>
+
+        <button type="submit" class="btn btn-primary">Register</button>
+
+        <NavLink class="btn btn-primary" href="/account/login">
+            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Login
+        </NavLink>
+
+    </div>
 
 </EditForm>
 

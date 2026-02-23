@@ -1,7 +1,61 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using VGLog.Components.Layout
+@using VGLog.Models
+@using VGLog.Services.DTOs
+@using System.Security.Claims;
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject VGLog.Services.VideogameService VideogameService
+
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Welcome to VGLog!</h1>
 
-Welcome to your new app.
+@if (isLoggedIn)
+{
+    <p>Total of @ProfileData.Total games</p>
+    <p>Total of completed games: @ProfileData.Completed</p>
+    <p>Total of playing: @ProfileData.Playing</p>
+    <p>Total of to play games: @ProfileData.ToPlay</p>
+    <p>Total playtime: @ProfileData.TotalHours</p>
+}
+else
+{
+    <p> Login/Register to see your games. </p>
+
+}
+@code
+{
+    private bool isLoggedIn;
+    private GetUserGamesDto? ProfileData;
+    //private List<UserGame> UserGames { get; set; } = new();
+    private string? userId;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        isLoggedIn = user.Identity?.IsAuthenticated ?? false;
+
+        if (isLoggedIn)
+        {
+            userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                ProfileData = await VideogameService.GetUserGamesWithCounterAsync(userId);
+                //TODO - caricare solamente la lista PARZIALE dei giochi per quanto riguarda la dashboard, inutile caricarla tutta per poi mostrarne solo una parte
+                //UserGames = ProfileData.Games;
+
+            }
+        }
+    }
+}

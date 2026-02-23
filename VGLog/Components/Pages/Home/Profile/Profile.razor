@@ -12,6 +12,7 @@
 @using VGLog.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using VGLog.Services.DTOs
+@using System.Security.Claims;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject VGLog.Services.VideogameService VideogameService
 @inject Radzen.NotificationService NotificationService
@@ -123,12 +124,16 @@
     private int SelectedRating { get; set; } = 1;
     private string? SelectedNotes { get; set; }
     private int? HoursPlayed { get; set; }
+    private string? userId;
 
     protected override async Task OnInitializedAsync()
     {
         authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
         user = authState.User;
+
+        userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
 
         AvailableGames = await VideogameService.GetAllAsync();
 
@@ -138,7 +143,7 @@
     private async Task LoadUserGames()
     {
 
-        ProfileData = await VideogameService.GetUserGamesWithCounterAsync(user);
+        ProfileData = await VideogameService.GetUserGamesWithCounterAsync(userId);
         UserGames = ProfileData.Games;
 
     }

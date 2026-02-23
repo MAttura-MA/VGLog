@@ -112,22 +112,23 @@ namespace VGLog.Services
 
         }
 
-        public async Task<GetUserGamesDto> GetUserGamesWithCounterAsync(ClaimsPrincipal user)
+        public async Task<GetUserGamesDto> GetUserGamesWithCounterAsync(string paramUserId)
         {
-            var userId = _userManager.GetUserId(user);
+            var loggedInUserId = _userManager.GetUserId(user);
 
             var userGames = await _context.UserGames
                 .Include(ug => ug.Videogame)
-                .Where(ug =>  ug.UserId == userId)
+                .Where(ug =>  ug.UserId == paramUserId)
                 .ToListAsync();
 
             var dto = new GetUserGamesDto
             {
-                Games = userGames,
-                Total = userGames.Count,
-                Completed = userGames.Count(g => g.GameStatus == GameStatus.Completed),
-                Playing = userGames.Count(g => g.GameStatus == GameStatus.Playing),
-                ToPlay = userGames.Count(g => g.GameStatus == GameStatus.Toplay)
+                Games = userGames ?? new List<UserGame>(),
+                Total = userGames?.Count ?? 0,
+                Completed = userGames?.Count(g => g.GameStatus == GameStatus.Completed) ?? 0,
+                Playing = userGames?.Count(g => g.GameStatus == GameStatus.Playing) ?? 0,
+                ToPlay = userGames?.Count(g => g.GameStatus == GameStatus.Toplay) ?? 0,
+                TotalHours = userGames?.Sum(g => g.HoursPlayed) ?? 0
             };
 
             return dto;
