@@ -38,6 +38,8 @@ builder.Services.AddScoped<VideogameService>();
 builder.Services.AddScoped<SoftwareHouseService>();
 builder.Services.AddScoped<PlatformService>();
 builder.Services.AddScoped<GenreService>();
+builder.Services.AddScoped<UserGamesService>();
+
 
 
 //Registrazione di radzen.blazor
