@@ -1,0 +1,115 @@
+﻿/* ============================= */
+/*         GLOBAL RESET          */
+/* ============================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* ============================= */
+/*        STATS CONTAINER        */
+/* ============================= */
+
+.stats-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ============================= */
+/*          STAT CARD            */
+/* ============================= */
+
+.stat-card {
+    padding: 1rem 1.25rem;
+    border-radius: 18px; /* more rounded */
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    width: auto;
+    min-width: 140px;
+    transition: all 0.15s ease;
+}
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+/* ============================= */
+/*      HEADER (ICON + TEXT)     */
+/* ============================= */
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 600; /* header bold */
+    margin-bottom: 0.4rem;
+}
+
+/* Icon inherits color automatically */
+.stat-icon {
+    font-size: 22px;
+}
+
+/* ============================= */
+/*          BIG NUMBER           */
+/* ============================= */
+
+
+.stat-value {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 400; /* numbers NOT bold */
+}
+
+/* ============================= */
+/*           COLORS              */
+/* ============================= */
+
+.text-primary {
+    color: #2979ff;
+}
+
+.text-success {
+    color: #2e7d32;
+}
+
+.text-warning {
+    color: #f9a825;
+}
+
+.text-purple {
+    color: #7e57c2;
+}
+
+.text-dark {
+    color: #424242;
+}
+
+/* ============================= */
+/*         RESPONSIVE            */
+/* ============================= */
+
+@media (max-width: 768px) {
+    .stat-card {
+        min-width: 120px;
+        padding: 0.8rem 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.6rem;
+    }
+
+    .stat-header {
+        font-size: 0.85rem;
+    }
+}

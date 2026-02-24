@@ -10,6 +10,8 @@ namespace VGLog.Services.DTOs
         public int Completed { get; set; }
         public int Playing { get; set; }
         public int ToPlay { get; set; }
+
+        public int Dropped { get; set; }
         public int? TotalHours { get; set; }
 
     }

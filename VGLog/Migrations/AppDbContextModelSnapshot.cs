@@ -317,6 +317,9 @@ namespace VGLog.Migrations
                     b.Property<int?>("PersonalRating")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("TimeStampAdded")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -343,8 +346,8 @@ namespace VGLog.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<byte?>("Image")
-                        .HasColumnType("INTEGER");
+                    b.Property<byte[]>("Image")
+                        .HasColumnType("BLOB");
 
                     b.Property<int?>("ReleaseYear")
                         .HasColumnType("INTEGER");

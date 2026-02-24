@@ -1,8 +1,10 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using VGLog.Components.Layout
 @using VGLog.Models
+@using VGLog.Models.ViewModels
 @using VGLog.Services.DTOs
 @using System.Security.Claims;
 
@@ -10,38 +12,125 @@
 
 @inject IHttpContextAccessor HttpContextAccessor
 @inject VGLog.Services.VideogameService VideogameService
+@inject VGLog.Services.UserGamesService UserGamesService
 
 
 <PageTitle>Home</PageTitle>
 
-<h1>Welcome to VGLog!</h1>
+
 
 @if (isLoggedIn)
 {
-    <p>Total of @ProfileData.Total games</p>
-    <p>Total of completed games: @ProfileData.Completed</p>
-    <p>Total of playing: @ProfileData.Playing</p>
-    <p>Total of to play games: @ProfileData.ToPlay</p>
-    <p>Total playtime: @ProfileData.TotalHours</p>
+    <h1>Welcome back, <b>@displayName!</b></h1>
+
+    <div class="stats-container">
+
+        <RadzenCard Class="stat-card">
+            <div class="stat-header text-primary">
+                <span>Total Games</span>
+            </div>
+            <div class="stat-value text-dark">
+                <RadzenIcon Icon="density_small" Class="stat-icon text-primary" />
+                @ProfileData.Total
+            </div>
+        </RadzenCard>
+
+        <RadzenCard Class="stat-card">
+            <div class="stat-header text-success">
+                <span>Completed</span>
+            </div>
+            <div class="stat-value text-dark">
+                <RadzenIcon Icon="check_circle" Class="stat-icon text-success" />
+                @ProfileData.Completed
+            </div>
+        </RadzenCard>
+
+        <RadzenCard Class="stat-card">
+            <div class="stat-header text-warning">
+                <span>Playing</span>
+            </div>
+            <div class="stat-value text-dark">
+                <RadzenIcon Icon="sports_esports" Class="stat-icon text-warning" />
+                @ProfileData.Playing
+            </div>
+        </RadzenCard>
+
+        <RadzenCard Class="stat-card">
+            <div class="stat-header text-purple">
+                <span>To Play</span>
+            </div>
+            <div class="stat-value text-dark">
+                <RadzenIcon Icon="schedule" Class="stat-icon text-purple" />
+                @ProfileData.ToPlay
+            </div>
+        </RadzenCard>
+
+        <RadzenCard Class="stat-card">
+            <div class="stat-header text-dark">
+                <span>Hours Played</span>
+            </div>
+            <div class="stat-value text-dark">
+                <RadzenIcon Icon="data_info_alert" Class="stat-icon text-dark" />
+                @ProfileData.TotalHours
+            </div>
+        </RadzenCard>
+
+    </div>
+
+    <RadzenRow Style="padding-top:1rem">
+
+    @if (ChartData.Any())
+    {
+        <RadzenCard Style="height: 350px; width: 33%">
+            <RadzenChart>
+                <RadzenLegend Position="LegendPosition.Right" />
+                <RadzenPieSeries Data="@ChartData" Title="Games Overview" CategoryProperty="Status" ValueProperty="Value">
+                    <RadzenSeriesDataLabels Visible="true" />
+                </RadzenPieSeries>
+            </RadzenChart>
+        </RadzenCard>
+    }
+
+    <RadzenCard Style="height: 350px; width: 33%">
+    <RadzenDataGrid Data="@LastFivePlayed" TItem="UserGame" Style="margin-top:1rem">
+        <Columns>
+            <RadzenDataGridColumn TItem="UserGame" Title="" Width="60px">
+                <Template Context="game">
+                        @if (game.Videogame?.Image != null)
+                        {
+                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(game.Videogame.Image)"
+                                 style="width:40px; height:40px; object-fit:cover; border-radius:4px;" />
+                        }
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Title" />
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenCard>
+    </RadzenRow>
 }
 else
 {
+
+    <h1>Welcome to VGLog!</h1>
     <p> Login/Register to see your games. </p>
 
 }
 @code
 {
+    private string? displayName;
     private bool isLoggedIn;
     private GetUserGamesDto? ProfileData;
+    private List<UserGame> LastFivePlayed { get; set; } = new();
     //private List<UserGame> UserGames { get; set; } = new();
     private string? userId;
-
-
+    private List<PieChartItems> ChartData = new();
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+
 
         isLoggedIn = user.Identity?.IsAuthenticated ?? false;
 
@@ -51,10 +140,27 @@ else
 
             if (!string.IsNullOrEmpty(userId))
             {
-                ProfileData = await VideogameService.GetUserGamesWithCounterAsync(userId);
+                ProfileData = await UserGamesService.GetUserGamesWithCounterAsync(userId);
+                LastFivePlayed = await UserGamesService.LastGamesAdded(userId);
+
                 //TODO - caricare solamente la lista PARZIALE dei giochi per quanto riguarda la dashboard, inutile caricarla tutta per poi mostrarne solo una parte
                 //UserGames = ProfileData.Games;
 
+                displayName = user.Claims
+                .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
+
+                if (ProfileData != null)
+                {
+                    ChartData = new List<PieChartItems>
+                    {
+                        new PieChartItems { Status = "Completed", Value = ProfileData.Completed},
+                        new PieChartItems {Status = "Playing", Value = ProfileData.Playing},
+                        new PieChartItems { Status = "To Play", Value = ProfileData.ToPlay},
+                        new PieChartItems { Status = "Dropped", Value = ProfileData.Dropped}
+                    }
+                    .Where(x => x.Value > 0)
+                    .ToList(); 
+                }
             }
         }
     }

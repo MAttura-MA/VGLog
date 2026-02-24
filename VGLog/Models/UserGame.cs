@@ -23,6 +23,8 @@ namespace VGLog.Models
         public DateTime? CompletedAt { get; set; }
         public string? Notes { get; set; }
 
+        public DateTime? TimeStampAdded { get; set; } = DateTime.Now;
+
         public GameStatus GameStatus { get; set; }
 
         public int? HoursPlayed { get; set; }

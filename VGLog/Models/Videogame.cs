@@ -12,7 +12,7 @@ namespace VGLog.Models
 
         public string? Description { get; set; }
         public int? ReleaseYear { get; set; }
-        public byte? Image { get; set; }
+        public byte[]? Image { get; set; }
 
         public List<Genre> Genres { get; set; } = new();
         public List<Platform> Platforms { get; set; } = new();

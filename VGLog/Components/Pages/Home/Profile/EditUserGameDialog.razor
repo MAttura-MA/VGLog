@@ -3,6 +3,8 @@
 @using VGLog.Services.DTOs
 @inject DialogService DialogService
 @inject VideogameService VideogameService
+@inject UserGamesService UserGamesService
+
 
 <RadzenTemplateForm TItem="UpdateUserGameDto" data="@EditDto" Submit="@OnSubmit">
     <div class="p-3">
@@ -51,7 +53,7 @@
     }
     private async Task OnSubmit(UpdateUserGameDto dto)
     {
-        await VideogameService.EditUserGameAsync(dto);
+        await UserGamesService.EditUserGameAsync(dto);
 
         DialogService.Close(true);
     }
