@@ -59,3 +59,22 @@ h1:focus {
     text-align: start;
 }
 
+.recent-games-grid thead {
+    display: none;
+}
+
+.recent-games-grid tr td {
+    border-bottom: hidden;
+    border: hidden;
+    border-top: hidden;
+    border-left: hidden;
+    border-right: hidden;
+    box-shadow: none;
+}
+
+div.rz-data-grid.recent-games-grid,
+.recent-games-grid.rz-data-grid,
+.recent-games-grid > .rz-data-grid {
+    border: none !important;
+    box-shadow: none !important;
+}

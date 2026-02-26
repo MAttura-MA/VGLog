@@ -77,22 +77,25 @@
 
     </div>
 
-    <RadzenRow Style="padding-top:1rem">
+    <RadzenRow Style="padding-top:1rem" JustifyContent="JustifyContent.Start">
 
     @if (ChartData.Any())
     {
-        <RadzenCard Style="height: 350px; width: 33%">
+
+            <RadzenCard Title="Games Overview" Style="height: 370px; width: 33%">
+                <div class="stat-value text-dark"> Games Overview</div>
             <RadzenChart>
                 <RadzenLegend Position="LegendPosition.Right" />
-                <RadzenPieSeries Data="@ChartData" Title="Games Overview" CategoryProperty="Status" ValueProperty="Value">
+                <RadzenPieSeries Data="@ChartData" Title="Games Overview" CategoryProperty="Status" ValueProperty="Value" Fills="@(new[] { "#2e7d32" , "#f9a825", "#7e57c2", "#424242"})">
                     <RadzenSeriesDataLabels Visible="true" />
                 </RadzenPieSeries>
             </RadzenChart>
         </RadzenCard>
     }
 
-    <RadzenCard Style="height: 350px; width: 33%">
-    <RadzenDataGrid Data="@LastFivePlayed" TItem="UserGame" Style="margin-top:1rem">
+        <RadzenCard Style="height: 370px; width: 33%">
+            <div class="stat-value text-dark"> Recent Games</div>
+            <RadzenDataGrid Data="@LastFivePlayed" TItem="UserGame" Style="margin-left:-1rem" Class="recent-games-grid">
         <Columns>
             <RadzenDataGridColumn TItem="UserGame" Title="" Width="60px">
                 <Template Context="game">
@@ -103,7 +106,7 @@
                         }
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Title" />
+                    <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="" />
                 </Columns>
             </RadzenDataGrid>
         </RadzenCard>
