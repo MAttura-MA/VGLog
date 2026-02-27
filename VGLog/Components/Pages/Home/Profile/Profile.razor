@@ -13,7 +13,6 @@
 @using VGLog.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using VGLog.Services.DTOs
-@using System.Security.Claims;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject VGLog.Services.VideogameService VideogameService
 @inject VGLog.Services.UserGamesService UserGamesService
@@ -47,14 +46,18 @@
     </RadzenCard>
 </div>
 
-<div class="stats-container" Style="margin-top:1rem">
+<div style="font-weight:700; font-size:2.5rem">Lifetime Stats</div>
+<div class="stats-container" Style="margin-top:-0.5rem">
     <RadzenCard Class="stat-card" Style="width:20%">
         <div class="stat-header text-primary">
             <span>Total Games</span>
         </div>
         <div class="stat-value text-dark">
             <RadzenIcon Icon="density_small" Class="stat-icon text-primary" />
-            @ProfileData.Total
+            @if (ProfileData != null)
+            {
+                @ProfileData.Total
+            }
         </div>
     </RadzenCard>
 
@@ -64,7 +67,10 @@
         </div>
         <div class="stat-value text-dark">
             <RadzenIcon Icon="check_circle" Class="stat-icon text-success" />
-            @ProfileData.Completed
+            @if (ProfileData != null)
+            {
+                @ProfileData.Completed
+            }
         </div>
     </RadzenCard>
 
@@ -74,11 +80,14 @@
         </div>
         <div class="stat-value text-dark">
             <RadzenIcon Icon="data_info_alert" Class="stat-icon text-dark" />
-            @ProfileData.TotalHours
+            @if (ProfileData != null)
+            {
+                @ProfileData.TotalHours
+            }
         </div>
     </RadzenCard>
 
-    <RadzenCard Class="stat-card" Style="width:20%">
+    <RadzenCard Class="stat-card" Style="width:32%">
         <div class="stat-header text-dark">
             <span>Completion Rate</span>
         </div>
@@ -88,9 +97,45 @@
         </div>
     </RadzenCard>
 </div>
+<div class="stats-container" Style="margin-top:1rem">
+    <RadzenCard Class="stat-card" Style="width:32%">
+        <div class="stat-header text-dark">
+            <span>Average Rating</span>
+        </div>
+        <div class="stat-value text-dark">
+            <RadzenIcon Icon="kid_star" Class="stat-icon text-dark" />
+            @AvgRating
+        </div>
+    </RadzenCard>
+
+    <RadzenCard Class="stat-card" Style="width:32%">
+        <div class="stat-header text-dark">
+            <span>Most played</span>
+        </div>
+        <div class="stat-value text-dark">
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(MostPlayedGame.Videogame.Image)" style="width:55px; height:75px; object-fit:cover; border-radius:6px;" />
+            <div style="display:flex; flex-direction:column; gap:0.2rem;">
+                <span style="font-size:1rem; font-weight:700;">@MostPlayedGame.Videogame.Title</span>
+                <span style="font-size:0.85rem; color:#555;">@MostPlayedGame.HoursPlayed hours</span>
+            </div>
+        </div>
+    </RadzenCard>
+
+    <RadzenCard Class="stat-card" Style="width:33%">
+        <div class="stat-header text-dark">
+            <span>Recently Completed</span>
+        </div>
+        <div class="stat-value text-dark">
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(MostRecentlyCompletedGame.Videogame.Image)" style="width:55px; height:75px; object-fit:cover; border-radius:6px;" />
+            <div style="display:flex; flex-direction:column; gap:0.2rem;">
+                <span style="font-size:1rem; font-weight:700;">@MostRecentlyCompletedGame.Videogame.Title</span>
+                <span style="font-size:0.85rem; color:#555;"> on @MostRecentlyCompletedGame.CompletedAt?.ToString("MMMM dd, yyyy") </span>
+            </div>
+        </div>
+    </RadzenCard>
+</div>
 
 @code {
-    public List<Videogame> AvailableGames = new();
     private List<UserGame> UserGames { get; set; } = new();
     protected List<KeyValuePair<GameStatus, string>> GameStatuses =
     Enum.GetValues<GameStatus>()
@@ -105,7 +150,6 @@
     private UpdateUserGameDto EditDto { get; set; }
 
     private string? displayName;
-    private bool checkSelectedUserGame;
     private AuthenticationState? authState;
     private ClaimsPrincipal? user;
     private GetUserGamesDto? ProfileData;
@@ -117,6 +161,7 @@
     private int? HoursPlayed { get; set; }
     private string? userId;
     private string? avatarBase64;
+
 
 
     protected override async Task OnInitializedAsync()
@@ -136,98 +181,21 @@
         displayName = user.Claims
                 .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
 
-        AvailableGames = await VideogameService.GetAllAsync();
-
         await LoadUserGames();
     }
 
     private async Task LoadUserGames()
     {
-
-        ProfileData = await UserGamesService.GetUserGamesWithCounterAsync(userId);
-        UserGames = ProfileData.Games;
-
-    }
-
-    private void OnGameSelected(object value)
-    {
-        if (SelectedGameId.HasValue)
-        {
-            SelectedGame = AvailableGames.FirstOrDefault(g => g.Id == SelectedGameId.Value);
-            SelectedRating = 1;
-            SelectedNotes = "";
-        }
-        else
-        {
-            SelectedGame = null;
-        }
-        StateHasChanged();
-    }
-
-    private async Task AddGame()
-    {
-        if (SelectedGame == null) return;
-
-
-        if (PlayedOrNot == GameStatus.Completed && (!HoursPlayed.HasValue || HoursPlayed.Value <= 0))
-        {
-            NotificationService.Notify(
-                NotificationSeverity.Warning,
-                "Invalid input",
-                "For completed games, Hours played must be greater than 0"
-            );
-            return;
-        }
         try
         {
-            bool alreadyExists = UserGames.Any(ug => ug.Videogame.Id == SelectedGame.Id);
-
-            if (alreadyExists == true)
-            {
-                NotificationService.Notify(
-                    NotificationSeverity.Warning,
-                    "Game already present",
-                    $"{SelectedGame.Title} is already in your profile!");
-                return;
-            }
-
-            await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
-            await LoadUserGames();
-
-            NotificationService.Notify(NotificationSeverity.Success, "Game added correctly", $"You've added {SelectedGame.Title} to your profile!");
-
-            SelectedGame = null;
-            SelectedGameId = null;
-            SelectedRating = 1;
-            SelectedNotes = "";
-            PlayedOrNot = default;
-            HoursPlayed = null;
-
-
+            ProfileData = await UserGamesService.GetUserGamesWithCounterAsync(userId);
+            UserGames = ProfileData.Games;
         }
-        catch (Exception ex)
+        catch
         {
-            NotificationService.Notify(NotificationSeverity.Error, "Errore", ex.Message);
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "There's an error retrieving the profile data, try again later");
         }
-    }
 
-
-
-
-
-    private async Task OpenEditDialog(UserGame item)
-    {
-        var result = await DialogService.OpenAsync<EditUserGameDialog>(
-            "Edit hours",
-            new Dictionary<string, object>
-                        {
-                { "UserGame", item }
-                        });
-
-        if (result == true)
-        {
-            await LoadUserGames();
-        }
     }
 
     private async Task MarkAsdropped(UserGame item)
@@ -261,4 +229,20 @@
 
     private double? completionRate => ProfileData.Total > 0
     ? Math.Round((double)ProfileData.Completed / ProfileData.Total * 100, 1) : 0;
+
+    private double AvgRating => Math.Round(UserGames
+    .Where(x => x.PersonalRating.HasValue)
+    .Select(x => x.PersonalRating!.Value)
+    .DefaultIfEmpty(0)
+    .Average(), 1);
+
+    private UserGame? MostPlayedGame => UserGames
+    .Where(x => x.HoursPlayed.HasValue)
+    .OrderByDescending(x => x.HoursPlayed)
+    .FirstOrDefault();
+
+    private UserGame? MostRecentlyCompletedGame => UserGames
+    .Where(x => x.CompletedAt.HasValue)
+    .OrderByDescending(x => x.CompletedAt)
+    .FirstOrDefault();
 }

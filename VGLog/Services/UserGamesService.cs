@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Net.WebSockets;
+using System.Security.Claims;
 using VGLog.Data;
 using VGLog.Models;
 using VGLog.Services.DTOs;
@@ -16,6 +17,43 @@ namespace VGLog.Services
         {
             _context = context;
             _userManager = userManager;
+        }
+
+        public async Task<UserGame> AddGameToUserAsync(int videogameId, int? personalRating, string? notes, ClaimsPrincipal user, GameStatus PlayedOrNot, int? HoursPlayed)
+        {
+            var userId = _userManager.GetUserId(user);
+
+            var gameExists = await _context.Videogames
+                .FirstOrDefaultAsync(g => g.Id == videogameId);
+
+            if (gameExists != null)
+            {
+                var alreadyAdded = await _context.UserGames
+                    .AnyAsync(ug => ug.UserId == userId && ug.VideogameId == videogameId);
+
+                if (alreadyAdded)
+                    throw new Exception("This game is already in your profile");
+
+                var userGame = new UserGame
+                {
+                    UserId = userId,
+                    VideogameId = videogameId,
+                    PersonalRating = personalRating,
+                    Completed = personalRating.HasValue,
+                    CompletedAt = PlayedOrNot == GameStatus.Completed ? DateTime.Now : null,
+                    GameStatus = PlayedOrNot,
+                    HoursPlayed = HoursPlayed,
+                    Notes = notes
+                };
+
+                _context.UserGames.Add(userGame);
+                await _context.SaveChangesAsync();
+
+                return userGame;
+            }
+
+            throw new Exception("Game not found");
+
         }
 
         public async Task<GetUserGamesDto> GetUserGamesWithCounterAsync(string paramUserId)
@@ -65,7 +103,6 @@ namespace VGLog.Services
 
             await _context.SaveChangesAsync();
         }
-
 
         public async Task<UserGame?> DeleteUserGameAsync(int Id)
         {

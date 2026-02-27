@@ -1,10 +1,14 @@
 ﻿@page "/games"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
 @using System.Reflection
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
-@using VGLog.Components.Pages.Home.Profile
+@using VGLog.Components.Pages.Videogame
 @using VGLog.Models
 @using VGLog.Services.DTOs
 
@@ -103,7 +107,6 @@
     private UpdateUserGameDto EditDto { get; set; }
 
     private string? displayName;
-    private bool checkSelectedUserGame;
     private AuthenticationState? authState;
     private ClaimsPrincipal? user;
     private GetUserGamesDto? ProfileData;
@@ -114,7 +117,6 @@
     private string? SelectedNotes { get; set; }
     private int? HoursPlayed { get; set; }
     private string? userId;
-    private string? avatarBase64;
 
 
     protected override async Task OnInitializedAsync()
@@ -183,7 +185,7 @@
                 return;
             }
 
-            await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
+            await UserGamesService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
             await LoadUserGames();
 
             NotificationService.Notify(NotificationSeverity.Success, "Game added correctly", $"You've added {SelectedGame.Title} to your profile!");
