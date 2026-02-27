@@ -1,7 +1,8 @@
-@page "/account/profile"
+﻿@page "/account/profile"
 @attribute [Authorize]
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @using Radzen
 @using Radzen.Blazor
 @using System.Reflection
@@ -19,87 +20,74 @@
 
 @inject Radzen.NotificationService NotificationService
 @inject DialogService DialogService
+@inject UserManager<ApplicationUser> UserManager
 
 
 <RadzenDialog />
 
 <RadzenNotification />
 
-<h3>Profile</h3>
-<h3>Videogame counter </h3>
 
-<p>Total of @ProfileData.Total games</p>
-<p>Total of completed games: @ProfileData.Completed</p>
-<p>Total of playing: @ProfileData.Playing</p>
-<p>Total of to play games: @ProfileData.ToPlay</p>
+<div>
+    <RadzenCard Style="display:flex; align-items:center; gap:1.5rem; padding:1.5rem;">
 
-<h3>Add a played videogame</h3>
+        @if (!string.IsNullOrEmpty(avatarBase64))
+        {
+            <img src="@avatarBase64" style="width:256px; height:256px; border-radius:12px; object-fit:cover;" />
+        }
+        <div style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom: 9rem">
+            <h2 style="margin:0; font-size:4rem; font-weight:700;">@displayName</h2>
+            <h3 style="margin:0; color:#666; font-size:0.9rem;">bioAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA futura</h3>
 
-<RadzenDropDown @bind-Value="@SelectedGameId"
-                Data="@AvailableGames"
-                TextProperty="Title"
-                ValueProperty="Id"
-                Placeholder="Select a game..."
-                Change="@OnGameSelected"
-                Style="width: 300px; position: relative; visibility: visible">
-</RadzenDropDown>
-
-
-
-@if (SelectedGame != null)
-{
-    <div class="mt-2">
-        <RadzenDropDown @bind-Value="@PlayedOrNot"
-        Data="@GameStatuses"
-        Placeholder="Game Status"
-        TextProperty="Value"
-        ValueProperty="Key">
-        </RadzenDropDown>
-    </div>
-    @if (PlayedOrNot == GameStatus.Playing)
-    {
-        <RadzenNumeric Placeholder="Add your time played" @bind-Value="@HoursPlayed" />
-
-    }
-    @if (PlayedOrNot == GameStatus.Completed)
-    {
-        <div class="mt-2">
-            <RadzenLabel Text="Rating (1-10)" />
-            <RadzenNumeric @bind-Value="SelectedRating" Min="1" Max="10" Style="width:80px" />
-            <InputText Placeholder="Add your notes" @bind-Value="@SelectedNotes" />
-            <RadzenNumeric Placeholder="Add your time played" @bind-Value="@HoursPlayed" />
-
+            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:#888;">
+                <RadzenIcon Icon="calendar_today" Style="font-size:16px;" />
+                <span>Joined: @* @user.JoinDate.ToString("MMMM dd, yyyy") *@ data iscrizione</span>
+            </div>
         </div>
+    </RadzenCard>
+</div>
 
-    }
-    <RadzenButton Text="Add to the profile" Click="AddGame" Style="margin-left:10px" />
-}
+<div class="stats-container" Style="margin-top:1rem">
+    <RadzenCard Class="stat-card" Style="width:20%">
+        <div class="stat-header text-primary">
+            <span>Total Games</span>
+        </div>
+        <div class="stat-value text-dark">
+            <RadzenIcon Icon="density_small" Class="stat-icon text-primary" />
+            @ProfileData.Total
+        </div>
+    </RadzenCard>
 
-<h3 class="mt-4">Your games</h3>
-<RadzenDataGrid Data="@UserGames" TItem="UserGame" AllowSorting="true" >
-    <Columns>
-        <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Game" />
-        <RadzenDataGridColumn TItem="UserGame" Property="PersonalRating" Title="Rating" />
-        <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" Sortable="false" />
-        <RadzenDataGridColumn TItem="UserGame" Property="GameStatus" Title="Game Status" />
-        <RadzenDataGridColumn TItem="UserGame" Property="HoursPlayed" Title="Hours played" />
-        <RadzenDataGridColumn TItem="UserGame" Title="Actions" Sortable="false">
-            <Template Context="item">
-                <RadzenButton Text="Edit"
-                Size="ButtonSize.Small"
-                Click="@(async () => await OpenEditDialog(item))" />
-                <RadzenButton Text="Drop"
-                Size="ButtonSize.Small"
-                Click="@(() => MarkAsdropped(item))" />
-                <RadzenButton Text="Delete"
-                Size="ButtonSize.Small"
-                Click="@(() => DeleteUserGame(item))" />
-            </Template>
-        </RadzenDataGridColumn>
+    <RadzenCard Class="stat-card" Style="width:20%">
+        <div class="stat-header text-success">
+            <span>Completed</span>
+        </div>
+        <div class="stat-value text-dark">
+            <RadzenIcon Icon="check_circle" Class="stat-icon text-success" />
+            @ProfileData.Completed
+        </div>
+    </RadzenCard>
 
+    <RadzenCard Class="stat-card" Style="width:20%">
+        <div class="stat-header text-dark">
+            <span>Hours Played</span>
+        </div>
+        <div class="stat-value text-dark">
+            <RadzenIcon Icon="data_info_alert" Class="stat-icon text-dark" />
+            @ProfileData.TotalHours
+        </div>
+    </RadzenCard>
 
-    </Columns>
-</RadzenDataGrid>
+    <RadzenCard Class="stat-card" Style="width:20%">
+        <div class="stat-header text-dark">
+            <span>Completion Rate</span>
+        </div>
+        <div class="stat-value text-dark">
+            <RadzenIcon Icon="done_all" Class="stat-icon text-dark" />
+            @completionRate%
+        </div>
+    </RadzenCard>
+</div>
 
 @code {
     public List<Videogame> AvailableGames = new();
@@ -116,6 +104,7 @@
 
     private UpdateUserGameDto EditDto { get; set; }
 
+    private string? displayName;
     private bool checkSelectedUserGame;
     private AuthenticationState? authState;
     private ClaimsPrincipal? user;
@@ -127,6 +116,8 @@
     private string? SelectedNotes { get; set; }
     private int? HoursPlayed { get; set; }
     private string? userId;
+    private string? avatarBase64;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,6 +127,14 @@
 
         userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+        var currentUser = await UserManager.FindByIdAsync(userId);
+
+        avatarBase64 = currentUser.Avatar != null
+            ? $"data:image/png;base64,{Convert.ToBase64String(currentUser.Avatar)}"
+            : null;
+
+        displayName = user.Claims
+                .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
 
         AvailableGames = await VideogameService.GetAllAsync();
 
@@ -221,9 +220,9 @@
         var result = await DialogService.OpenAsync<EditUserGameDialog>(
             "Edit hours",
             new Dictionary<string, object>
-                    {
+                        {
                 { "UserGame", item }
-                    });
+                        });
 
         if (result == true)
         {
@@ -260,4 +259,6 @@
         NotificationService.Notify(NotificationSeverity.Success, "Deleted", $"{item.Videogame.Title} removed from your profile.");
     }
 
+    private double? completionRate => ProfileData.Total > 0
+    ? Math.Round((double)ProfileData.Completed / ProfileData.Total * 100, 1) : 0;
 }
