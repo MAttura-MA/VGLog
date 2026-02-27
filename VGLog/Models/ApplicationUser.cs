@@ -6,6 +6,9 @@ namespace VGLog.Models
     {
         public string? DisplayName { get; set; }
 
+        public byte[]? Avatar { get; set; }
+
+        public string? AvatarPath { get; set; }
         public ICollection<UserGame> UserGames { get; set; } = new List<UserGame>();
 
     }

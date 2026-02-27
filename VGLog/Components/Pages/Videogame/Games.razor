@@ -1,2 +1,249 @@
 ﻿@page "/games"
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using VGLog.Components.Pages.Home.Profile
+@using VGLog.Models
+@using VGLog.Services.DTOs
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject VGLog.Services.VideogameService VideogameService
+@inject VGLog.Services.UserGamesService UserGamesService
+
+@inject Radzen.NotificationService NotificationService
+@inject DialogService DialogService
+@inject UserManager<ApplicationUser> UserManager
+
+
 <PageTitle>All games</PageTitle>
+
+<h3>Add a played videogame</h3>
+
+<RadzenDropDown @bind-Value="@SelectedGameId"
+                Data="@AvailableGames"
+                TextProperty="Title"
+                ValueProperty="Id"
+                Placeholder="Select a game..."
+                Change="@OnGameSelected"
+                Style="width: 300px; position: relative; visibility: visible">
+</RadzenDropDown>
+
+
+
+ @if (SelectedGame != null)
+{
+    <div class="mt-2">
+        <RadzenDropDown @bind-Value="@PlayedOrNot"
+        Data="@GameStatuses"
+        Placeholder="Game Status"
+        TextProperty="Value"
+        ValueProperty="Key">
+        </RadzenDropDown>
+    </div>
+    @if (PlayedOrNot == GameStatus.Playing)
+    {
+        <RadzenNumeric Placeholder="Add your time played" @bind-Value="@HoursPlayed" />
+
+    }
+    @if (PlayedOrNot == GameStatus.Completed)
+    {
+        <div class="mt-2">
+            <RadzenLabel Text="Rating (1-10)" />
+            <RadzenNumeric @bind-Value="SelectedRating" Min="1" Max="10" Style="width:80px" />
+            <InputText Placeholder="Add your notes" @bind-Value="@SelectedNotes" />
+            <RadzenNumeric Placeholder="Add your time played" @bind-Value="@HoursPlayed" />
+
+        </div>
+
+    }
+    <RadzenButton Text="Add to the profile" Click="AddGame" Style="margin-left:10px" />
+}
+
+ <h3 class="mt-4">Your games</h3>
+<RadzenDataGrid Data="@UserGames" TItem="UserGame" AllowSorting="true" >
+    <Columns>
+        <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Game" />
+        <RadzenDataGridColumn TItem="UserGame" Property="PersonalRating" Title="Rating" />
+        <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" Sortable="false" />
+        <RadzenDataGridColumn TItem="UserGame" Property="GameStatus" Title="Game Status" />
+        <RadzenDataGridColumn TItem="UserGame" Property="HoursPlayed" Title="Hours played" />
+        <RadzenDataGridColumn TItem="UserGame" Title="Actions" Sortable="false">
+            <Template Context="item">
+                <RadzenButton Text="Edit"
+                Size="ButtonSize.Small"
+                Click="@(async () => await OpenEditDialog(item))" />
+                <RadzenButton Text="Drop"
+                Size="ButtonSize.Small"
+                Click="@(() => MarkAsdropped(item))" />
+                <RadzenButton Text="Delete"
+                Size="ButtonSize.Small"
+                Click="@(() => DeleteUserGame(item))" />
+            </Template>
+        </RadzenDataGridColumn>
+
+
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    public List<Videogame> AvailableGames = new();
+    private List<UserGame> UserGames { get; set; } = new();
+    protected List<KeyValuePair<GameStatus, string>> GameStatuses =
+    Enum.GetValues<GameStatus>()
+        .Select(e => new KeyValuePair<GameStatus, string>(
+            e,
+            e.GetType()
+             .GetMember(e.ToString())[0]
+             .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
+        ))
+        .ToList();
+
+    private UpdateUserGameDto EditDto { get; set; }
+
+    private string? displayName;
+    private bool checkSelectedUserGame;
+    private AuthenticationState? authState;
+    private ClaimsPrincipal? user;
+    private GetUserGamesDto? ProfileData;
+    private GameStatus PlayedOrNot { get; set; }
+    private int? SelectedGameId { get; set; }
+    private Videogame? SelectedGame { get; set; }
+    private int SelectedRating { get; set; } = 1;
+    private string? SelectedNotes { get; set; }
+    private int? HoursPlayed { get; set; }
+    private string? userId;
+    private string? avatarBase64;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        user = authState.User;
+
+        userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        displayName = user.Claims
+                .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
+
+        AvailableGames = await VideogameService.GetAllAsync();
+
+        await LoadUserGames();
+    }
+
+    private async Task LoadUserGames()
+    {
+
+        ProfileData = await UserGamesService.GetUserGamesWithCounterAsync(userId);
+        UserGames = ProfileData.Games;
+
+    }
+
+    private void OnGameSelected(object value)
+    {
+        if (SelectedGameId.HasValue)
+        {
+            SelectedGame = AvailableGames.FirstOrDefault(g => g.Id == SelectedGameId.Value);
+            SelectedRating = 1;
+            SelectedNotes = "";
+        }
+        else
+        {
+            SelectedGame = null;
+        }
+        StateHasChanged();
+    }
+
+    private async Task AddGame()
+    {
+        if (SelectedGame == null) return;
+
+
+        if (PlayedOrNot == GameStatus.Completed && (!HoursPlayed.HasValue || HoursPlayed.Value <= 0))
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Warning,
+                "Invalid input",
+                "For completed games, Hours played must be greater than 0"
+            );
+            return;
+        }
+        try
+        {
+            bool alreadyExists = UserGames.Any(ug => ug.Videogame.Id == SelectedGame.Id);
+
+            if (alreadyExists == true)
+            {
+                NotificationService.Notify(
+                    NotificationSeverity.Warning,
+                    "Game already present",
+                    $"{SelectedGame.Title} is already in your profile!");
+                return;
+            }
+
+            await VideogameService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
+            await LoadUserGames();
+
+            NotificationService.Notify(NotificationSeverity.Success, "Game added correctly", $"You've added {SelectedGame.Title} to your profile!");
+
+            SelectedGame = null;
+            SelectedGameId = null;
+            SelectedRating = 1;
+            SelectedNotes = "";
+            PlayedOrNot = default;
+            HoursPlayed = null;
+
+
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Errore", ex.Message);
+        }
+    }
+
+    private async Task OpenEditDialog(UserGame item)
+    {
+        var result = await DialogService.OpenAsync<EditUserGameDialog>(
+            "Edit hours",
+            new Dictionary<string, object>
+                        {
+                { "UserGame", item }
+                        });
+
+        if (result == true)
+        {
+            await LoadUserGames();
+        }
+    }
+
+    private async Task MarkAsdropped(UserGame item)
+    {
+
+        await UserGamesService.EditUserGameStatusAsync(item.Id, GameStatus.Dropped);
+
+        item.GameStatus = GameStatus.Dropped;
+
+        StateHasChanged();
+    }
+
+    private async Task DeleteUserGame(UserGame item)
+    {
+        bool? confirmed = await DialogService.Confirm(
+                $"Are you sure you want to delete {item.Videogame.Title}?",
+                "Confirm Delete",
+                new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+
+        if (!confirmed.HasValue || !confirmed.Value)
+            return;
+
+        await UserGamesService.DeleteUserGameAsync(item.Id);
+
+        UserGames.Remove(item);
+
+        StateHasChanged();
+
+        NotificationService.Notify(NotificationSeverity.Success, "Deleted", $"{item.Videogame.Title} removed from your profile.");
+    }
+}
