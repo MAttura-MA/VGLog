@@ -56,25 +56,66 @@ namespace VGLog.Services
 
         }
 
-        public async Task<GetUserGamesDto> GetUserGamesWithCounterAsync(string paramUserId)
+        public async Task<GetUserGamesDto> GetUserGamesByIdAsync(string paramUserId)
         {
             var userGames = await _context.UserGames
                 .Include(ug => ug.Videogame)
                 .Where(ug => ug.UserId == paramUserId)
                 .ToListAsync();
 
-            var dto = new GetUserGamesDto
-            {
-                Games = userGames ?? new List<UserGame>(),
-                Total = userGames?.Count ?? 0,
-                Completed = userGames?.Count(g => g.GameStatus == GameStatus.Completed) ?? 0,
-                Playing = userGames?.Count(g => g.GameStatus == GameStatus.Playing) ?? 0,
-                ToPlay = userGames?.Count(g => g.GameStatus == GameStatus.Toplay) ?? 0,
-                Dropped = userGames?.Count(g => g.GameStatus == GameStatus.Dropped) ?? 0,
-                TotalHours = userGames?.Sum(g => g.HoursPlayed) ?? 0
-            };
+            if (!userGames.Any())
+                return new GetUserGamesDto();
 
-            return dto;
+            //calcoli semplici
+            var completedGames = userGames.Count(x => x.GameStatus == GameStatus.Completed);
+            var playingGames = userGames.Count(x => x.GameStatus == GameStatus.Playing);
+            var toPlayGames = userGames.Count(x => x.GameStatus == GameStatus.Toplay);
+            var droppedGames = userGames.Count(x => x.GameStatus == GameStatus.Dropped);
+            var totalHours = userGames.Sum(x => x.HoursPlayed);
+
+            var avgRating = userGames
+                .Where(x => x.PersonalRating.HasValue)
+                .Select(x => x.PersonalRating!.Value)
+                .DefaultIfEmpty(0)
+                .Average();
+
+            var mostPlayedGame = userGames
+                .OrderByDescending(x => x.HoursPlayed)
+                .FirstOrDefault();
+
+            var mostRecentlyCompletedGame = userGames
+                .Where(x => x.GameStatus == GameStatus.Completed && x.CompletedAt.HasValue)
+                .OrderByDescending(x => x.CompletedAt)
+                .FirstOrDefault();
+
+            return new GetUserGamesDto
+            {
+                Games = userGames,
+                Total = userGames.Count,
+                Completed = completedGames,
+                Playing = playingGames,
+                ToPlay = toPlayGames,
+                Dropped = droppedGames,
+                TotalHours = totalHours,
+                CompletionRate = userGames.Count > 0
+                    ? Math.Round((double)completedGames / userGames.Count * 100, 1)
+                    : 0,
+                AvgRating = Math.Round(avgRating, 1),
+                MostPlayedGame = mostPlayedGame,
+                MostRecentlyCompletedGame = mostRecentlyCompletedGame
+            };
+            //var dto = new GetUserGamesDto
+            //{
+            //    Games = userGames ?? new List<UserGame>(),
+            //    Total = userGames?.Count ?? 0,
+            //    Completed = userGames?.Count(g => g.GameStatus == GameStatus.Completed) ?? 0,
+            //    Playing = userGames?.Count(g => g.GameStatus == GameStatus.Playing) ?? 0,
+            //    ToPlay = userGames?.Count(g => g.GameStatus == GameStatus.Toplay) ?? 0,
+            //    Dropped = userGames?.Count(g => g.GameStatus == GameStatus.Dropped) ?? 0,
+            //    TotalHours = userGames?.Sum(g => g.HoursPlayed) ?? 0
+            //};
+
+            //return dto;
         }
 
         public async Task EditUserGameAsync(UpdateUserGameDto dto)
@@ -169,6 +210,14 @@ namespace VGLog.Services
 
             // Calcola percentuale e arrotonda a 1 decimale
             return Math.Round((double)completed / total * 100, 1);
+        }
+
+        public string GetDisplayName (ClaimsPrincipal user, string paramUserId)
+        {
+            var result = user.Claims
+                .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
+
+            return result ?? string.Empty;
         }
     }
 

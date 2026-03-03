@@ -138,7 +138,7 @@
     private async Task LoadUserGames()
     {
 
-        ProfileData = await UserGamesService.GetUserGamesWithCounterAsync(userId);
+        ProfileData = await UserGamesService.GetUserGamesByIdAsync(userId);
         UserGames = ProfileData.Games;
 
     }

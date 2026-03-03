@@ -92,7 +92,7 @@
         </div>
         <div class="stat-value text-yellow">
             <RadzenIcon Icon="done_all" Class="stat-icon text-yellow" />
-            @completionRate%
+            @ProfileData?.CompletionRate%
         </div>
     </RadzenCard>
 </div>
@@ -103,7 +103,7 @@
         </div>
         <div class="stat-value text-dark">
             <RadzenIcon Icon="kid_star" Class="stat-icon text-dark" />
-            @avgRating
+            @ProfileData?.AvgRating
         </div>
     </RadzenCard>
 
@@ -112,10 +112,13 @@
             <span>Most played</span>
         </div>
         <div class="stat-value text-dark">
-            <img src="data:image/jpeg;base64,@Convert.ToBase64String(mostPlayedGame.Videogame.Image)" style="width:55px; height:75px; object-fit:cover; border-radius:6px;" />
+            @if (ProfileData?.MostPlayedGame?.Videogame?.Image != null)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(ProfileData.MostPlayedGame.Videogame.Image)" />
+            }
             <div style="display:flex; flex-direction:column; gap:0.2rem;">
-                <span style="font-size:1rem; font-weight:700;">@mostPlayedGame.Videogame.Title</span>
-                <span style="font-size:0.85rem; color:#555;">@mostPlayedGame.HoursPlayed hours</span>
+                <span style="font-size:1rem; font-weight:700;">@ProfileData?.MostPlayedGame?.Videogame.Title</span>
+                <span style="font-size:0.85rem; color:#555;">@ProfileData?.MostPlayedGame?.HoursPlayed hours</span>
             </div>
         </div>
     </RadzenCard>
@@ -125,17 +128,25 @@
             <span>Recently Completed</span>
         </div>
         <div class="stat-value text-dark">
-            <img src="data:image/jpeg;base64,@Convert.ToBase64String(mostRecentlyCompletedGame.Videogame.Image)" style="width:55px; height:75px; object-fit:cover; border-radius:6px;" />
+            @if (ProfileData?.MostRecentlyCompletedGame?.Videogame?.Image != null)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(ProfileData.MostRecentlyCompletedGame.Videogame.Image)" style="width:55px; height:75px; object-fit:cover; border-radius:6px;" />
+            }
             <div style="display:flex; flex-direction:column; gap:0.2rem;">
-                <span style="font-size:1rem; font-weight:700;">@mostRecentlyCompletedGame.Videogame.Title</span>
-                <span style="font-size:0.85rem; color:#555;"> on @mostRecentlyCompletedGame.CompletedAt?.ToString("MMMM dd, yyyy") </span>
+                <span style="font-size:1rem; font-weight:700;">@ProfileData?.MostRecentlyCompletedGame?.Videogame.Title</span>
+                <span style="font-size:0.85rem; color:#555;">
+                    @(
+                     ProfileData.MostRecentlyCompletedGame?.CompletedAt.HasValue == true
+                     ? "on " + ProfileData.MostRecentlyCompletedGame.CompletedAt.Value.ToString("MMMM dd, yyyy", System.Globalization.CultureInfo.InvariantCulture)
+                     : ""
+                     )
+                </span>
             </div>
         </div>
     </RadzenCard>
 </div>
 
 @code {
-    private List<UserGame> UserGames { get; set; } = new();
     protected List<KeyValuePair<GameStatus, string>> GameStatuses =
     Enum.GetValues<GameStatus>()
         .Select(e => new KeyValuePair<GameStatus, string>(
@@ -146,64 +157,52 @@
         ))
         .ToList();
 
-    private UpdateUserGameDto EditDto { get; set; }
-
-    private string? displayName;
+    //variabili per autenticazione
     private AuthenticationState? authState;
     private ClaimsPrincipal? user;
-    private GetUserGamesDto? ProfileData;
-    private GameStatus PlayedOrNot { get; set; }
-    private int? SelectedGameId { get; set; }
-    private Videogame? SelectedGame { get; set; }
-    private int SelectedRating { get; set; } = 1;
-    private string? SelectedNotes { get; set; }
-    private int? HoursPlayed { get; set; }
     private string? userId;
+
+
+    private string? displayName;
     private string? avatarBase64;
     private string joinedDate;
-    private double avgRating;
-    private UserGame mostPlayedGame;
-    private UserGame mostRecentlyCompletedGame;
-    private double completionRate;
+    private GetUserGamesDto? ProfileData;
+    private List<UserGame> UserGames = new();
 
 
 
     protected override async Task OnInitializedAsync()
     {
         authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
         user = authState.User;
-
         userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        var currentUser = await UserManager.FindByIdAsync(userId);
+        if (string.IsNullOrEmpty(userId))
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "User not authenticated");
+            return;
+        }
 
+        var currentUser = await UserManager.FindByIdAsync(userId);
         joinedDate = currentUser.UserCreationTime.ToString("dd MMMM, yyyy", System.Globalization.CultureInfo.InvariantCulture);
+
+
+        await LoadUserGames();
+
         avatarBase64 = currentUser.Avatar != null
             ? $"data:image/png;base64,{Convert.ToBase64String(currentUser.Avatar)}"
             : null;
 
-        displayName = user.Claims
-                .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
+        displayName = GetDisplayNameService(user, userId);
 
-        avgRating = await GetAvgRatingService(userId);
-
-        mostPlayedGame = await GetMostPlayedGameService(userId);
-
-        mostRecentlyCompletedGame = await GetRecentlyCompleteGameService(userId);
-
-        await LoadUserGames();
     }
 
     private async Task LoadUserGames()
     {
         try
         {
-            ProfileData = await UserGamesService.GetUserGamesWithCounterAsync(userId);
-            UserGames = ProfileData.Games;
-            completionRate = ProfileData?.Total > 0
-                ? Math.Round((double)ProfileData.Completed / ProfileData.Total * 100, 1)
-                : 0;
+            ProfileData = await UserGamesService.GetUserGamesByIdAsync(userId);
+
         }
         catch
         {
@@ -224,6 +223,9 @@
 
     private async Task DeleteUserGame(UserGame item)
     {
+        if (item.UserId != userId)
+            throw new UnauthorizedAccessException();
+
         bool? confirmed = await DialogService.Confirm(
                 $"Are you sure you want to delete {item.Videogame.Title}?",
                 "Confirm Delete",
@@ -241,18 +243,8 @@
         NotificationService.Notify(NotificationSeverity.Success, "Deleted", $"{item.Videogame.Title} removed from your profile.");
     }
 
-    public async Task<double> GetAvgRatingService(string id)
+    public string GetDisplayNameService(ClaimsPrincipal user, string id)
     {
-        return await UserGamesService.GetAvgRating(id);
-    }
-
-    public async Task<UserGame?> GetMostPlayedGameService(string id)
-    {
-        return await UserGamesService.GetMostPlayedGame(id);
-    }
-
-    public async Task<UserGame?> GetRecentlyCompleteGameService (string id)
-    {
-        return await UserGamesService.GetRecentlyCompleteGame(id);
+        return UserGamesService.GetDisplayName(user, id);
     }
 }
