@@ -131,5 +131,45 @@ namespace VGLog.Services
 
             return result;
         }
+
+        public async Task<double> GetAvgRating(string paramUserId)
+        {
+            var result = await _context.UserGames
+                .Where(x => x.UserId == paramUserId && x.PersonalRating != null)
+                .AverageAsync(x => x.PersonalRating.Value);
+
+            return Math.Round(result, 1);
+        }
+
+        public async Task<UserGame?> GetMostPlayedGame(string paramUserId)
+        {
+            var result = await _context.UserGames
+                .Where(x => x.UserId == paramUserId)
+                .OrderByDescending(x => x.HoursPlayed)
+                .FirstOrDefaultAsync();
+
+            return result;
+        }
+
+        public async Task<UserGame?> GetRecentlyCompleteGame(string paramUserId)
+        {
+            var result = await _context.UserGames
+                .Where(x => x.UserId == paramUserId)
+                .OrderByDescending(x => x.CompletedAt)
+                .FirstOrDefaultAsync();
+
+            return result;
+        }
+
+        public double GetCompletionRate(int completed, int total, string paramUserId)
+        {
+            // Evita divisione per zero
+            if (total == 0)
+                return 0;
+
+            // Calcola percentuale e arrotonda a 1 decimale
+            return Math.Round((double)completed / total * 100, 1);
+        }
     }
+
 }

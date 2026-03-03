@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using NuGet.Packaging.Signing;
 
 namespace VGLog.Models
 {
@@ -9,6 +10,8 @@ namespace VGLog.Models
         public byte[]? Avatar { get; set; }
 
         public string? AvatarPath { get; set; }
+
+        public DateTime UserCreationTime { get; set; } = DateTime.Now;
         public ICollection<UserGame> UserGames { get; set; } = new List<UserGame>();
 
     }

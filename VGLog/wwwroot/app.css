@@ -63,15 +63,21 @@ h1:focus {
     display: none;
 }
 
-.recent-games-grid table tr td {
-    border: none !important;
-    box-shadow: none !important;
+.recent-games-grid table td {
+    border: none;
+    box-shadow: none;
 }
 
-div.rz-data-grid.recent-games-grid,
-.recent-games-grid.rz-data-grid,
-.recent-games-grid > .rz-data-grid {
-    border: none !important;
-    box-shadow: none !important;
+div.rz-data-grid.recent-games-grid {
+    border: none;
+    box-shadow: none;
+}
+
+.stat-card {
+    padding: 1rem 1.25rem;
+    border-radius: 18px;
+    width: auto;
+    min-width: 140px;
+    background-color: #050420 !important;
 }
 
