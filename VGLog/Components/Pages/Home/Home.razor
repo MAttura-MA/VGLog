@@ -157,7 +157,7 @@ else
 
             if (!string.IsNullOrEmpty(userId))
             {
-                ProfileData = await UserGamesService.GetUserGamesWithCounterAsync(userId);
+                ProfileData = await UserGamesService.GetUserGamesByIdAsync(userId);
                 LastFivePlayed = await UserGamesService.LastGamesAdded(userId);
 
                 //TODO - caricare solamente la lista PARZIALE dei giochi per quanto riguarda la dashboard, inutile caricarla tutta per poi mostrarne solo una parte
