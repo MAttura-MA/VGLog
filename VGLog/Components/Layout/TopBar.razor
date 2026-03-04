@@ -1,0 +1,44 @@
+﻿@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<div class="topbar-user" @onclick="ToggleDropdown">
+    <div class="topbar-avatar">@(DisplayName?[0].ToString().ToUpper())</div>
+    <span class="topbar-name">@DisplayName</span>
+    <span class="topbar-chevron @(dropdownOpen ? "open" : "")">▾</span>
+</div>
+
+@if (dropdownOpen)
+{
+    <div class="topbar-dropdown">
+        <button class="dd-item" @onclick="GoToProfile">
+            <span>👤</span>
+            <span>Profile</span>
+        </button>
+        <hr class="dd-divider" />
+        <form method="post" action="/auth/Logout" style="margin:0">
+            <AntiforgeryToken />
+            <input type="hidden" name="returnUrl" value="/account/login" />
+            <button type="submit" class="dd-item dd-logout">
+                <span>→</span>
+                <span>Logout</span>
+            </button>
+        </form>
+    </div>
+}
+
+@code {
+    [Parameter] public string? DisplayName { get; set; }
+
+    private bool dropdownOpen = false;
+
+    private void ToggleDropdown()
+    {
+        dropdownOpen = !dropdownOpen;
+    }
+
+    private void GoToProfile()
+    {
+        dropdownOpen = false;
+        Navigation.NavigateTo("/account/profile");
+    }
+}

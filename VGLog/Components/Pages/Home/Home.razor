@@ -22,116 +22,135 @@
 
 @if (isLoggedIn)
 {
-    <h1>Welcome back, <b>@displayName!</b></h1>
-
-    <div class="stats-container">
-
-        <RadzenCard Class="stat-card">
-            <div class="stat-header text-primary">
-                <span>Total Games</span>
+    <div class="h-welcome">
+        <div class="h-welcome-left">
+            <div class="h-welcome-avatar">
+                @(displayName?[0].ToString().ToUpper())
             </div>
-            <div class="stat-value text-dark">
-                <RadzenIcon Icon="density_small" Class="stat-icon text-primary" />
-                @ProfileData.Total
+            <div class="h-welcome-text">
+                <span class="h-welcome-greeting">Welcome back</span>
+                <span class="h-welcome-name">@displayName</span>
             </div>
-        </RadzenCard>
-
-        <RadzenCard Class="stat-card">
-            <div class="stat-header text-success">
-                <span>Completed</span>
-            </div>
-            <div class="stat-value text-dark">
-                <RadzenIcon Icon="check_circle" Class="stat-icon text-success" />
-                @ProfileData.Completed
-            </div>
-        </RadzenCard>
-
-        <RadzenCard Class="stat-card">
-            <div class="stat-header text-warning">
-                <span>Playing</span>
-            </div>
-            <div class="stat-value text-dark">
-                <RadzenIcon Icon="sports_esports" Class="stat-icon text-warning" />
-                @ProfileData.Playing
-            </div>
-        </RadzenCard>
-
-        <RadzenCard Class="stat-card">
-            <div class="stat-header text-purple">
-                <span>To Play</span>
-            </div>
-            <div class="stat-value text-dark">
-                <RadzenIcon Icon="schedule" Class="stat-icon text-purple" />
-                @ProfileData.ToPlay
-            </div>
-        </RadzenCard>
-
-        <RadzenCard Class="stat-card">
-            <div class="stat-header text-dark">
-                <span>Hours Played</span>
-            </div>
-            <div class="stat-value text-dark">
-                <RadzenIcon Icon="data_info_alert" Class="stat-icon text-dark" />
-                @ProfileData.TotalHours
-            </div>
-        </RadzenCard>
-
+        </div>
+        <span class="h-welcome-date">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</span>
     </div>
 
-    <RadzenRow Style="padding-top:1rem" JustifyContent="JustifyContent.Start">
+    <div class="h-stats-grid">
+        <div class="h-stat-card">
+            <div class="h-stat-label blue">
+                <RadzenIcon Icon="density_small" />
+                Total Games
+            </div>
+            <div class="h-stat-value">@ProfileData?.Total</div>
+        </div>
+        <div class="h-stat-card">
+            <div class="h-stat-label green">
+                <RadzenIcon Icon="check_circle" />
+                Completed
+            </div>
+            <div class="h-stat-value" style="color:#3ddc84">@ProfileData?.Completed</div>
+        </div>
+        <div class="h-stat-card">
+            <div class="h-stat-label yellow">
+                <RadzenIcon Icon="sports_esports" />
+                Playing
+            </div>
+            <div class="h-stat-value" style="color:#f5c842">@ProfileData?.Playing</div>
+        </div>
+        <div class="h-stat-card">
+            <div class="h-stat-label purple">
+                <RadzenIcon Icon="schedule" />
+                To Play
+            </div>
+            <div class="h-stat-value" style="color:#7c5cfc">@ProfileData?.ToPlay</div>
+        </div>
+        <div class="h-stat-card">
+            <div class="h-stat-label muted">
+                <RadzenIcon Icon="timer" />
+                Hours Played
+            </div>
+            <div class="h-stat-value">@ProfileData?.TotalHours</div>
+        </div>
+    </div>
 
+    <!-- BOTTOM: CHART + RECENT GAMES -->
+    <div class="h-bottom-grid">
+
+        <!-- CHART -->
         @if (ChartData.Any())
         {
-
-            <RadzenCard Title="Games Overview" Style="height: 370px; width: 33%">
-                <div class="stat-value text-dark"> Games Overview</div>
+            <div class="h-section">
+                <div class="h-section-header">
+                    <div class="h-section-title">
+                        <div class="h-section-dot" style="background:#7c5cfc"></div>
+                        Games Overview
+                    </div>
+                </div>
                 <RadzenChart>
                     <RadzenLegend Position="LegendPosition.Right" />
-                    <RadzenPieSeries Data="@ChartData" Title="Games Overview" CategoryProperty="Status" ValueProperty="Value" Fills="@(new[] { "#2e7d32" , "#f9a825", "#7e57c2", "#424242"})">
+                    <RadzenPieSeries Data="@ChartData"
+                                     Title="Games Overview"
+                                     CategoryProperty="Status"
+                                     ValueProperty="Value"
+                                     Fills="@(new[] { "#3ddc84", "#f5c842", "#7c5cfc", "#6b6b85" })">
                         <RadzenSeriesDataLabels Visible="true" />
                     </RadzenPieSeries>
                 </RadzenChart>
-            </RadzenCard>
+            </div>
         }
 
-        <RadzenCard Style="height: 370px; width: 33%">
-            <div class="stat-value text-dark"> 
-                Recent Games
-                <RadzenButton Text="See all games" Click="GoToAllGames" Style="margin-left:8rem; background-color:lightgray; color:black; border-radius:10px" />
-
+        <!-- RECENT GAMES -->
+        <div class="h-section">
+            <div class="h-section-header">
+                <div class="h-section-title">
+                    <div class="h-section-dot" style="background:#fc5c7d"></div>
+                    Recent Games
+                </div>
+                <button class="h-btn-ghost" @onclick="GoToAllGames">See all →</button>
             </div>
 
+            @if (LastFivePlayed.Any())
+            {
+                @foreach (var game in LastFivePlayed)
+                {
+                    <div class="h-game-row">
+                        @if (game.Videogame?.Image != null)
+                        {
+                            <img class="h-game-img"
+                                 src="data:image/jpeg;base64,@Convert.ToBase64String(game.Videogame.Image)"
+                                 alt="@game.Videogame.Title" />
+                        }
+                        else
+                        {
+                            <div class="h-game-img" style="display:flex;align-items:center;justify-content:center;font-size:18px;">🎮</div>
+                        }
+                        <span class="h-game-title">@game.Videogame?.Title</span>
+                        <span class="h-status-badge @GetStatusClass(game.GameStatus)">
+                            @game.GameStatus
+                        </span>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="color:#6b6b85; font-size:14px; padding:16px 0; text-align:center;">
+                    No games added yet.
+                </div>
+            }
+        </div>
 
-            <RadzenDataGrid Data="@LastFivePlayed" TItem="UserGame" Style="margin-left:-1rem" Class="recent-games-grid">
-                <Columns>
-                    <RadzenDataGridColumn TItem="UserGame" Title="" Width="60px">
-                        <Template Context="game">
-                            @if (game.Videogame?.Image != null)
-                            {
-                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(game.Videogame.Image)"
-                                style="width:40px; height:40px; object-fit:cover; border-radius:4px;" />
-                            }
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="" />
-                    <RadzenDataGridColumn TItem="UserGame" Title="" Width="120px">
-                        <Template Context="game">
-                            <span style="@GetStatusStyle(game.GameStatus)">
-                                @game.GameStatus
-                            </span>
-                        </Template>
-                    </RadzenDataGridColumn>
-                </Columns>
-            </RadzenDataGrid>
-        </RadzenCard>
-    </RadzenRow>
+    </div>
 }
 else
 {
-
-    <h1>Welcome to VGLog!</h1>
-    <p> Login/Register to see your games. </p>
-
+    <div class="h-guest">
+        <div class="h-guest-title">Welcome to VGLog</div>
+        <p class="h-guest-sub">Track your games, check your playtime and keep track of your completed games.</p>
+        <div class="h-guest-actions">
+            <a class="h-btn-primary" href="/account/login">Login</a>
+            <a class="h-btn-ghost" href="/account/register" style="padding:11px 28px; text-decoration:none; display:inline-block;">Register</a>
+        </div>
+    </div>
 }
 @code
 {
@@ -187,11 +206,12 @@ else
         NavigationManager.NavigateTo("/Account/Profile");
     }
 
-    private string GetStatusStyle(GameStatus? status) => status switch
+    private string GetStatusClass(GameStatus? status) => status switch
     {
-        GameStatus.Completed => "background:rgb(25, 135, 84); color:#AFF0D2; padding:4px 0; border-radius:20px; font-size:0.85rem; width:80px; display:inline-block; text-align:center;",
-        GameStatus.Playing => "background:#ffc107; color:#c69500; padding:4px 0; border-radius:20px; font-size:0.85rem; width:80px; display:inline-block; text-align:center;",
-        GameStatus.Toplay => "background:mediumpurple; color:#43259a; padding:4px 0; border-radius:20px; font-size:0.85rem; width:80px; display:inline-block; text-align:center;",
-        GameStatus.Dropped => "background:#6c6c6c; color:#000000; padding:4px 0; border-radius:20px; font-size:0.85rem; width:80px; display:inline-block; text-align:center;"
+        GameStatus.Completed => "h-status-completed",
+        GameStatus.Playing => "h-status-playing",
+        GameStatus.Toplay => "h-status-toplay",
+        GameStatus.Dropped => "h-status-dropped",
+        _ => ""
     };
 }

@@ -1,0 +1,42 @@
+﻿.dd-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #e8e8f0 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    border: none !important;
+    transition: background 0.2s !important;
+    box-sizing: border-box !important;
+    text-align: left !important;
+}
+
+    .dd-item:hover {
+        background: rgba(124, 92, 252, 0.1) !important;
+        color: #fff !important;
+        text-decoration: none !important;
+    }
+
+.dd-logout {
+    color: #fc5c7d !important;
+}
+
+    .dd-logout:hover {
+        background: rgba(252, 92, 125, 0.1) !important;
+    }
+
+::deep a.dd-item,
+a.dd-item:hover,
+a.dd-item:visited,
+a.dd-item:focus {
+    text-decoration: none !important;
+    color: #e8e8f0 !important;
+}
+

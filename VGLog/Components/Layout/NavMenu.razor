@@ -4,10 +4,8 @@
 
 <RadzenNotification />
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">VGLog</a>
-    </div>
+<div class="sidebar-logo">
+    <span class="logo-vg">VG</span><span class="logo-log">LOG</span>
 </div>
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
@@ -18,22 +16,6 @@
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
             </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            @if (IsLoggedIn)
-            {
-                <NavLink class="nav-link" href="/account/profile">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Profile
-                </NavLink>
-            }
-            else
-            {
-                <NavLink class="nav-link" href="/account/login">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Profile
-                </NavLink>
-
-            }
         </div>
 
         <div class="nav-item px-3">
