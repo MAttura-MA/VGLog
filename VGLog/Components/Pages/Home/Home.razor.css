@@ -34,3 +34,346 @@
     font-size: 1.8rem;
     font-weight: 400;
 }
+
+.h-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.h-welcome-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.h-welcome-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7c5cfc, #fc5c7d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: #fff;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+
+.h-welcome-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.h-welcome-greeting {
+    font-size: 13px;
+    color: #6b6b85;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.h-welcome-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: #e8e8f0;
+    line-height: 1;
+}
+
+.h-welcome-date {
+    font-size: 12px;
+    color: #6b6b85;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+
+.h-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.h-stat-card {
+    background: #15151e;
+    border: 1px solid rgba(124,92,252,0.2);
+    border-radius: 12px;
+    padding: 18px 20px;
+    transition: border-color .2s, transform .2s;
+    animation: h-fadeUp .4s ease both;
+    cursor: default;
+}
+
+    .h-stat-card:hover {
+        border-color: rgba(252,92,125,0.35);
+        transform: translateY(-2px);
+    }
+
+    .h-stat-card:nth-child(1) {
+        animation-delay: .05s;
+    }
+
+    .h-stat-card:nth-child(2) {
+        animation-delay: .10s;
+    }
+
+    .h-stat-card:nth-child(3) {
+        animation-delay: .15s;
+    }
+
+    .h-stat-card:nth-child(4) {
+        animation-delay: .20s;
+    }
+
+    .h-stat-card:nth-child(5) {
+        animation-delay: .25s;
+    }
+
+.h-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .h-stat-label .rzi {
+        font-size: 14px;
+    }
+
+    .h-stat-label.blue {
+        color: #5b8dee;
+    }
+
+    .h-stat-label.green {
+        color: #3ddc84;
+    }
+
+    .h-stat-label.yellow {
+        color: #f5c842;
+    }
+
+    .h-stat-label.purple {
+        color: #7c5cfc;
+    }
+
+    .h-stat-label.muted {
+        color: #6b6b85;
+    }
+
+.h-stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 1px;
+    line-height: 1;
+    color: #e8e8f0;
+}
+
+/* ── BOTTOM GRID ──────────────────────────── */
+.h-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* ── SECTION CARD ─────────────────────────── */
+.h-section {
+    background: #15151e;
+    border: 1px solid rgba(124,92,252,0.2);
+    border-radius: 14px;
+    padding: 22px;
+    animation: h-fadeUp .4s ease both;
+    animation-delay: .3s;
+}
+
+.h-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.h-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: .5px;
+    color: #e8e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.h-section-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.h-btn-ghost {
+    background: transparent;
+    color: #6b6b85;
+    border: 1px solid rgba(255,255,255,0.07);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+}
+
+    .h-btn-ghost:hover {
+        color: #e8e8f0;
+        border-color: rgba(255,255,255,.2);
+    }
+
+/* ── GAME ROW ─────────────────────────────── */
+.h-game-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+    .h-game-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+.h-game-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #1c1c28;
+}
+
+.h-game-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: #e8e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.h-status-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.h-status-completed {
+    background: rgba(61,220,132,.15);
+    color: #3ddc84;
+}
+
+.h-status-playing {
+    background: rgba(245,200,66,.15);
+    color: #f5c842;
+}
+
+.h-status-toplay {
+    background: rgba(124,92,252,.15);
+    color: #7c5cfc;
+}
+
+.h-status-dropped {
+    background: rgba(108,108,108,.15);
+    color: #6b6b85;
+}
+
+/* ── CHART OVERRIDES ──────────────────────── */
+.h-section .rz-chart {
+    height: 260px !important;
+}
+
+.rz-legend-item-text {
+    color: #6b6b85 !important;
+    font-size: 12px !important;
+}
+
+.rz-series-data-label {
+    fill: #e8e8f0 !important;
+    font-size: 12px !important;
+}
+
+/* ── GUEST SCREEN ─────────────────────────── */
+.h-guest {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 16px;
+    text-align: center;
+}
+
+.h-guest-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: #e8e8f0;
+    letter-spacing: 2px;
+}
+
+.h-guest-sub {
+    font-size: 15px;
+    color: #6b6b85;
+    max-width: 340px;
+    line-height: 1.6;
+}
+
+.h-guest-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.h-btn-primary {
+    background: #7c5cfc;
+    color: #fff;
+    border: none;
+    padding: 11px 28px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity .2s;
+}
+
+    .h-btn-primary:hover {
+        opacity: .85;
+        color: #fff;
+    }
+
+@@keyframes h-fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+</style >

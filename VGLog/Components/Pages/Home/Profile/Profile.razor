@@ -26,6 +26,7 @@
 
 <RadzenNotification />
 
+<PageTitle>VGLog – Profile</PageTitle>
 
 <div>
     <RadzenCard Style="display:flex; align-items:center; gap:1.5rem; padding:1.5rem;" class="stat-card">
@@ -87,23 +88,34 @@
     </RadzenCard>
 
     <RadzenCard Class="stat-card" Style="width:24%">
-        <div class="stat-header text-yellow">
+        <div class="stat-header text-green">
             <span>Completion Rate</span>
         </div>
-        <div class="stat-value text-yellow">
-            <RadzenIcon Icon="done_all" Class="stat-icon text-yellow" />
+        <div class="stat-value text-green">
+            <RadzenIcon Icon="done_all" Class="stat-icon text-green" />
             @ProfileData?.CompletionRate%
         </div>
     </RadzenCard>
 </div>
 <div class="stats-container" Style="margin-top:1rem">
     <RadzenCard Class="stat-card" Style="width:33%">
-        <div class="stat-header text-dark">
+        <div class="stat-header text-yellow">
             <span>Average Rating</span>
         </div>
-        <div class="stat-value text-dark">
-            <RadzenIcon Icon="kid_star" Class="stat-icon text-dark" />
+        <div class="stat-value text-yellow">
+            <RadzenIcon Icon="kid_star" Class="stat-icon text-yellow" />
             @ProfileData?.AvgRating
+        </div>
+        <div class="text-yellow">
+            <span class="p-stars">
+                @{
+                    var rating = (int)Math.Round((double)(ProfileData?.AvgRating ?? 0));
+                }
+                @for (int i = 1; i <= 5; i++)
+                {
+                    @(i <= rating ? "★" : "☆")
+                }
+            </span>
         </div>
     </RadzenCard>
 
@@ -114,7 +126,7 @@
         <div class="stat-value text-dark">
             @if (ProfileData?.MostPlayedGame?.Videogame?.Image != null)
             {
-                <img src="data:image/jpeg;base64,@Convert.ToBase64String(ProfileData.MostPlayedGame.Videogame.Image)" />
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(ProfileData.MostPlayedGame.Videogame.Image)" style="width:55px; height:75px; object-fit:cover; border-radius:6px;" />
             }
             <div style="display:flex; flex-direction:column; gap:0.2rem;">
                 <span style="font-size:1rem; font-weight:700;">@ProfileData?.MostPlayedGame?.Videogame.Title</span>

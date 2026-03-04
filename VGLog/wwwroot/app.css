@@ -1,5 +1,6 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: white;
 }
 
 a, .btn-link {
@@ -78,6 +79,144 @@ div.rz-data-grid.recent-games-grid {
     border-radius: 18px;
     width: auto;
     min-width: 140px;
-    background-color: #050420 !important;
+    background-color: #090738 !important;
 }
 
+body {
+    font-family: 'DM Sans', sans-serif;
+}
+
+.top-row {
+    position: relative;
+}
+
+.topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    user-select: none;
+}
+
+    .topbar-user:hover {
+        background: rgba(124, 92, 252, 0.1);
+    }
+
+.topbar-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7c5cfc, #fc5c7d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.topbar-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e8e8f0;
+}
+
+.topbar-chevron {
+    color: #6b6b85;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+    .topbar-chevron.open {
+        transform: rotate(180deg);
+    }
+
+.topbar-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 16px;
+    background: #0f0f18;
+    border: 1px solid rgba(124, 92, 252, 0.3);
+    border-radius: 10px;
+    padding: 6px;
+    min-width: 180px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.dd-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #e8e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    transition: background 0.2s;
+    box-sizing: border-box;
+}
+
+    .dd-item:hover {
+        background: rgba(124, 92, 252, 0.1);
+        color: #fff;
+    }
+
+.dd-logout {
+    color: #fc5c7d !important;
+}
+
+    .dd-logout:hover {
+        background: rgba(252, 92, 125, 0.1) !important;
+    }
+
+.dd-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    margin: 4px 0;
+}
+
+/* Background trasparente per tutta la data grid */
+.rz-data-grid {
+    background: transparent !important;
+}
+
+    .rz-data-grid .rz-grid-table {
+        background: transparent !important;
+    }
+
+    /* Header colonne */
+    .rz-data-grid th,
+    .rz-data-grid .rz-column-header-cell {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(124, 92, 252, 0.2) !important;
+        color: #6b6b85 !important;
+        font-size: 12px !important;
+    }
+
+    /* Righe */
+    .rz-data-grid td,
+    .rz-data-grid .rz-body-cell {
+        background: transparent !important;
+        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        color: #e8e8f0 !important;
+    }
+
+    /* Hover riga */
+    .rz-data-grid tr:hover td {
+        background: rgba(124, 92, 252, 0.08) !important;
+    }
+
+    /* Rimuovi bordo esterno della grid */
+    .rz-data-grid .rz-datatable {
+        border: none !important;
+        background: transparent !important;
+    }

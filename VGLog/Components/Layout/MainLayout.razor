@@ -1,3 +1,4 @@
+
 @using Microsoft.AspNetCore.Components.Authorization
 @using VGLog.Components.Layout
 
@@ -18,50 +19,13 @@
         <div class="top-row px-4">
             @if (isLoggedIn)
             {
-                <RadzenProfileMenu>
-                    <Template>
-                        <RadzenText Style="color: #ffffff; font-weight: 500; letter-spacing: 0.02em;">
-                            @displayName
-                        </RadzenText>
-                    </Template>
-                    <ChildContent>
-                        <RadzenProfileMenuItem Path="/account/profile">
-                            <Template>
-                                <a href="/account/profile">
-                                    <RadzenIcon Icon="account_circle" />
-                                    <span>Profile</span>
-                                </a>
-                            </Template>
-                        </RadzenProfileMenuItem>
-                        <RadzenProfileMenuItem>
-                            <Template>
-                                <form method="post" action="/auth/Logout">
-                                    <AntiforgeryToken />
-                                    <input type="hidden" name="returnUrl" value="/account/login" />
-                                    <button type="submit">
-                                        <RadzenIcon Icon="logout" />
-                                        <span>Logout</span>
-                                    </button>
-                                </form>
-                            </Template>
-                        </RadzenProfileMenuItem>
-                    </ChildContent>
-                </RadzenProfileMenu>
-
-                    @* <form method="post" action="auth/logout">
-                        <input type="hidden" name="__RequestVerificationToken" value="@antiForgeryToken" />
-                        <button type="submit" class="btn btn-link">Logout</button>
-                    </form>
-
-                    <a href="/account/profile">Profile</a> *@
+                <TopBar DisplayName="@displayName" />
             }
             else
             {
-                <a href="/account/login">Login</a>
-                <a href="/account/register">Register</a>
+                <a class="topbar-auth-link" href="/account/login">Login</a>
+                <a class="topbar-auth-btn" href="/account/register">Register</a>
             }
-
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div>
 
         <article class="content px-4">
@@ -77,6 +41,7 @@
 </div>
 
 @code {
+    private bool dropdownOpen = false;
     private string? displayName;
     private bool isLoggedIn;
     private string? antiForgeryToken;
@@ -104,6 +69,16 @@
     {
         Navigation.NavigateTo("/account/profile");
     }
+
+    private void CloseDropdown()
+    {
+        dropdownOpen = false;
+    }
+
+    private void ToggleDropdown()
+{
+    dropdownOpen = !dropdownOpen;
+}
 
     [Inject]
     private IHttpContextAccessor httpContextAccessor { get; set; } = default!;

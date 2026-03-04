@@ -103,3 +103,26 @@
         overflow-y: auto;
     }
 }
+
+.sidebar-logo {
+    padding: 50px 24px 28px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 50px;
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70px;
+}
+
+.logo-vg {
+    color: #7c5cfc;
+}
+
+.logo-log {
+    color: #fc5c7d;
+}
+
+.sidebar {
+    background-color: #15151e;
+}
