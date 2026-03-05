@@ -1,6 +1,6 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    color: white;
+    color: white !important;
 }
 
 a, .btn-link {
@@ -184,39 +184,31 @@ body {
     margin: 4px 0;
 }
 
-/* Background trasparente per tutta la data grid */
-.rz-data-grid {
+.rz-data-grid,
+.rz-data-grid .rz-datatable,
+.rz-data-grid .rz-grid-table {
     background: transparent !important;
+    border: none !important;
 }
 
-    .rz-data-grid .rz-grid-table {
-        background: transparent !important;
-    }
+.rz-data-grid th,
+.rz-data-grid .rz-column-header-cell {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(124, 92, 252, 0.2) !important;
+    color: white !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.06em !important;
+}
 
-    /* Header colonne */
-    .rz-data-grid th,
-    .rz-data-grid .rz-column-header-cell {
-        background: transparent !important;
-        border-bottom: 1px solid rgba(124, 92, 252, 0.2) !important;
-        color: #6b6b85 !important;
-        font-size: 12px !important;
-    }
+.rz-data-grid td,
+.rz-data-grid .rz-body-cell {
+    background: transparent !important;
+    border-bottom: none !important;
+    color: white !important;
+}
 
-    /* Righe */
-    .rz-data-grid td,
-    .rz-data-grid .rz-body-cell {
-        background: transparent !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-        color: #e8e8f0 !important;
-    }
-
-    /* Hover riga */
-    .rz-data-grid tr:hover td {
-        background: rgba(124, 92, 252, 0.08) !important;
-    }
-
-    /* Rimuovi bordo esterno della grid */
-    .rz-data-grid .rz-datatable {
-        border: none !important;
-        background: transparent !important;
-    }
+html {
+    --rz-grid-header-color: white !important;
+    --rz-grid-cell-color: white !important;
+}

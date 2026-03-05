@@ -73,10 +73,8 @@
         </div>
     </div>
 
-    <!-- BOTTOM: CHART + RECENT GAMES -->
     <div class="h-bottom-grid">
 
-        <!-- CHART -->
         @if (ChartData.Any())
         {
             <div class="h-section">
@@ -99,7 +97,6 @@
             </div>
         }
 
-        <!-- RECENT GAMES -->
         <div class="h-section">
             <div class="h-section-header">
                 <div class="h-section-title">
@@ -203,7 +200,7 @@ else
 
     protected void GoToAllGames()
     {
-        NavigationManager.NavigateTo("/Account/Profile");
+        NavigationManager.NavigateTo("/Games");
     }
 
     private string GetStatusClass(GameStatus? status) => status switch
