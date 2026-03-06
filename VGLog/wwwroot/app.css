@@ -1,6 +1,9 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     color: white !important;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
 a, .btn-link {
@@ -211,4 +214,87 @@ body {
 html {
     --rz-grid-header-color: white !important;
     --rz-grid-cell-color: white !important;
+}
+
+/*dialogs stile*/
+
+.rz-dialog {
+    background-color: #0f0f18;
+}
+
+.rz-dialog-content {
+    background-color: #0f0f18;
+}
+
+.rz-dialog-titlebar {
+    background-color: #0f0f18 !important;
+}
+
+.rz-dialog-title {
+    background-color: #0f0f18;
+    color: white !important;
+}
+
+/*stile dei dropdowns*/
+
+.rz-dropdown-panel {
+    background-color: #1a1a2e !important;
+    border: 1px solid #2a2a4a !important;
+}
+
+.opt3-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.opt3-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 260px;
+    flex-shrink: 0;
+}
+
+.opt3-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 200px;
+}
+
+.opt3-divider {
+    width: 1px;
+    background: #1e1e3a;
+    align-self: stretch;
+}
+
+.option-label {
+    font-size: .7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #a0a0b8;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rz-body {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+#blazor-error-ui {
+    display: none;
+}
+
+body {
+    margin: 0 !important;
+    background-color: #070711 !important;
 }

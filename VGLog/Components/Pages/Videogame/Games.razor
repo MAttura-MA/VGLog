@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @attribute [Authorize]
 
+<RadzenDialog />
 @using System.Reflection
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -23,80 +24,103 @@
 
 <PageTitle>VGLog - My Games</PageTitle>
 
-<h1>My Game Library</h1>
-<p>Track, rate and manage your videogame journey</p>
-
-<div>
-    <p>Add a game</p>
-
+<div class="page-header">
     <div>
-        <span>Game</span>
-        <RadzenDropDown @bind-Value="@SelectedGameId"
-                        Data="@AvailableGames"
-                        TextProperty="Title"
-                        ValueProperty="Id"
-                        Placeholder="Search for a game..."
-                        Change="@OnGameSelected"
-                        Style="width: 300px; position: relative; visibility: visible">
-        </RadzenDropDown>
-
-        @if (SelectedGame != null)
-        {
-            <div class="mt-2">
-                <span>Status</span>
-                <RadzenDropDown @bind-Value="@PlayedOrNot"
-                                Data="@GameStatuses"
-                                Placeholder="Game Status"
-                                TextProperty="Value"
-                                ValueProperty="Key"
-                                Style="width:180px" />
-            </div>
-            <div>
-                <span>Hours played</span>
-                <RadzenNumeric @bind-Value="@HoursPlayed"
-                               Placeholder="0"
-                               min="0"
-                               Style="width:110px" />
-
-            </div>
-
-
-            @if (PlayedOrNot == GameStatus.Completed)
-            {
-                <div class="mt-2">
-
-                    <span class="vg-label">Rating (1–10)</span>
-                    <RadzenNumeric @bind-Value="SelectedRating"
-                                   Min="1"
-                                   Max="10"
-                                   Style="width:90px" />
-                </div>
-
-                <div style="flex:1; min-width:200px">
-                    <span>Notes</span>
-                    <RadzenTextBox @bind-Value="@SelectedNotes"
-                                   Placeholder="Your thoughts..."
-                                   Style:"width:100%" />
-                </div>
-
-            }
-            <div style="justify-content:flex-end">
-
-                <RadzenButton Text="Add to the profile"
-                              Click="AddGame"
-                              ButtonStyle="ButtonStyle.Primary"
-                              Style="margin-left:10px" />
-            </div>
-        }
+        <h1 class="page-title">My Game Library</h1>
+        <p class="page-subtitle">Track, rate and manage your videogame journey</p>
     </div>
 </div>
 
-<div>
-    <p>
-        🗂️ Your library
-        <span>@UserGames.Count games</span>
-    </p>
-</div>
+<RadzenCard Style="padding:1.5rem;" class="stat-card">
+
+
+    <div class="section-title">ADD A GAME</div>
+
+    <div class="opt3-layout">
+        <div class="opt3-left">
+            <div class="field">
+                <span class="option-label">Game</span>
+                <RadzenDropDown @bind-Value="@SelectedGameId"
+                                Data="@AvailableGames"
+                                TextProperty="Title"
+                                ValueProperty="Id"
+                                AllowFiltering="true"
+                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                Placeholder="Search for a game..."
+                                Change="@OnGameSelected"
+                                Style="width:100%" />
+
+
+            </div>
+
+            @if (SelectedGame != null)
+            {
+                <div class="field">
+                    <span class="option-label">Status</span>
+                    <RadzenDropDown @bind-Value="@PlayedOrNot"
+                    Data="@GameStatuses"
+                    Placeholder="Game Status"
+                    TextProperty="Value"
+                    ValueProperty="Key"
+                    Style="width:100%" />
+                </div>
+
+                <div class="field">
+                    <span class="option-label">Hours played</span>
+                    <RadzenNumeric @bind-Value="@HoursPlayed"
+                    Placeholder="0"
+                    min="0"
+                    Style="width:100%" />
+
+                </div>
+
+                @if (PlayedOrNot != GameStatus.Completed)
+                {
+                    <RadzenButton Text="Add to library"
+                                  Click="AddGame"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Icon="add_circle"
+                                  Style="width:100%; margin-top:12px;" />
+                }
+            }
+        </div>
+
+
+
+
+        @if (SelectedGame != null && PlayedOrNot == GameStatus.Completed)
+        {
+            <div class="opt3-divider"></div>
+            <div class="opt3-right">
+                <div class="field">
+
+                    <span class="option-label">Rating</span>
+                    <RadzenRating @bind-Value="SelectedRating"
+                                  Stars="10" />
+                </div>
+                <div class="field" style="flex:1">
+                    <span class="option-label">Notes</span>
+                    <RadzenTextArea @bind-Value="@SelectedNotes"
+                                    Placeholder="Your thoughts..."
+                                    Rows="5"
+                                    Style="width:100%; flex:1; resize:none;" />
+
+                </div>
+
+
+
+                <div style="display:flex; justify-content:flex-end; margin-top:auto;">
+                    <RadzenButton Text="Add to library"
+                                  Click="AddGame"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Style="margin-left:10px"
+                                  Icon="add_circle" />
+                </div>
+            </div>
+        }
+        
+    </div>
+</RadzenCard>
 
 <RadzenDataGrid Data="@UserGames"
                 TItem="UserGame"
@@ -157,24 +181,17 @@
             </Template>
         </RadzenDataGridColumn>
 
-        <RadzenDataGridColumn TItem="UserGame" 
-                              Title="Actions" 
-                              Sortable="false" 
+        <RadzenDataGridColumn TItem="UserGame"
+                              Title="Actions"
+                              Sortable="false"
                               Width="130px"
-                              Frozen="true" 
+                              Frozen="true"
                               FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="item">
                 <div>
                     <RadzenButton Text="Edit"
                                   Size="ButtonSize.Small"
                                   Click="@(async () => await OpenEditDialog(item))" />
-                    @if (item.GameStatus != GameStatus.Dropped)
-                    {
-                        <RadzenButton Text="Drop"
-                                      Size="ButtonSize.Small"
-                                      Click="@(() => MarkAsdropped(item))"
-                                      style="margin-left:1rem" />
-                    }
 
                     <RadzenButton Text="Delete"
                                   Size="ButtonSize.Small"
@@ -304,12 +321,15 @@
 
     private async Task OpenEditDialog(UserGame item)
     {
-        var result = await DialogService.OpenAsync<EditUserGameDialog>(
-            "Edit hours",
-            new Dictionary<string, object>
-                            {
-                { "UserGame", item }
-                            });
+        var result = await DialogService.OpenAsync<EditUserGameDialog>("Edit Game", new Dictionary<string, object> { { "UserGame", item } },
+        new DialogOptions()
+            {
+                Resizable = false,
+                Draggable = false,
+                Width = "450px",
+                Height = "auto",
+                Style = "position: fixed; top: 50%; transform: translate(-50%, -50%);"
+            });
 
         if (result == true)
         {
@@ -317,27 +337,19 @@
         }
     }
 
-    private async Task MarkAsdropped(UserGame item)
-    {
-
-        await UserGamesService.EditUserGameStatusAsync(item.Id, GameStatus.Dropped);
-
-        item.GameStatus = GameStatus.Dropped;
-
-        StateHasChanged();
-    }
-
     private async Task DeleteUserGame(UserGame item)
     {
         bool? confirmed = await DialogService.Confirm(
                 $"Are you sure you want to delete {item.Videogame.Title}?",
                 "Confirm Delete",
-                new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+                new ConfirmOptions() { CancelButtonText = "Yes", OkButtonText = "No", Style = "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" });
 
-        if (!confirmed.HasValue || !confirmed.Value)
+        if (confirmed != false)
             return;
 
         await UserGamesService.DeleteUserGameAsync(item.Id);
+
+        UserGames = UserGames.Where(g => g.Id != item.Id).ToList(); // crea nuova lista senza l'elemento
 
         UserGames.Remove(item);
 

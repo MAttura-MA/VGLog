@@ -129,6 +129,7 @@ namespace VGLog.Services
             userGame.HoursPlayed = dto.HoursPlayed;
             userGame.Notes = dto.Notes;
             userGame.PersonalRating = dto.PersonalRating;
+            userGame.GameStatus = dto.GameStatus;
 
             await _context.SaveChangesAsync();
         }

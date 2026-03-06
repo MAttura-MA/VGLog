@@ -1,1 +1,95 @@
-﻿
+﻿.page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-subtitle {
+    color: #a0a0b8;
+    margin: 4px 0 0;
+    font-size: .9rem;
+}
+
+.card {
+    background: #13132a;
+    border: 1px solid #1e1e3a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.25rem;
+}
+
+.card-section-title {
+    color: #a0a0b8;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.add-game-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.rating-cell {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.rating-value {
+    font-weight: 600;
+    color: gold;
+    font-size: .9rem;
+}
+
+.rating-max {
+    color: #a0a0b8;
+    font-size: .75rem;
+}
+
+.rating-star {
+    color: gold;
+    font-size: .8rem;
+}
+
+.empty-cell {
+    color: #4a4a6a;
+    font-size: .85rem;
+}
+
+.notes-cell {
+    color: #c0c0d8;
+    font-size: .85rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.rz-rating .rz-rating-icon {
+    color: #2a2a4a !important;
+    font-size: 1.2rem !important;
+}
+
+    .rz-rating .rz-rating-icon.rz-state-active {
+        color: gold !important;
+    }
+
+    .rz-rating .rzi-star {
+        color: gold !important;
+    }

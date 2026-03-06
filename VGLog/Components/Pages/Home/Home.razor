@@ -158,6 +158,7 @@ else
     //private List<UserGame> UserGames { get; set; } = new();
     private string? userId;
     private List<PieChartItems> ChartData = new();
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -175,9 +176,6 @@ else
             {
                 ProfileData = await UserGamesService.GetUserGamesByIdAsync(userId);
                 LastFivePlayed = await UserGamesService.LastGamesAdded(userId);
-
-                //TODO - caricare solamente la lista PARZIALE dei giochi per quanto riguarda la dashboard, inutile caricarla tutta per poi mostrarne solo una parte
-                //UserGames = ProfileData.Games;
 
                 displayName = user.Claims
                 .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
