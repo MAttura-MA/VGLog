@@ -1,0 +1,241 @@
+﻿@page "/statistics"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using VGLog.Models
+@using VGLog.Models.ViewModels
+@using VGLog.Services
+@using VGLog.Services.DTOs
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject VGLog.Services.UserGamesService UserGamesService
+
+<PageTitle>VGLog - Statistics</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Statistics</h1>
+        <p class="page-subtitle">A deep dive into your gaming habits</p>
+    </div>
+</div>
+@if (ProfileData == null)
+{
+    <div class="loading-state">
+        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <span>Loading your stats...</span>
+    </div>
+}
+else if (!ProfileData.Games.Any())
+{
+    <div class="empty-state">
+        <span class="empty-icon">📊</span>
+        <p>No data yet — add some games to see your statistics!</p>
+    </div>
+}
+else
+{
+    
+    <div class="stats-container" Style="margin-top: 1rem; display:flex">
+        <RadzenCard Class="stat-card" Style="width:24%; margin-left:1rem">
+            <div class="stat-header text-primary">
+                <span>Total Games</span>
+            </div>
+            <div class="stat-value text-dark">
+                <RadzenIcon Icon="density_small" Class="stat-icon text-primary" />
+                @if (ProfileData != null)
+                {
+                    <span Class="text-primary">@ProfileData.Total</span>
+                }
+            </div>
+    </RadzenCard>
+
+        <RadzenCard Class="stat-card" Style="width:24%; margin-left:1rem">
+            <div class="stat-header text-success">
+                <span>Total Hours</span>
+            </div>
+            <div class="stat-value text-dark">
+                <RadzenIcon Icon="timer" Class="stat-icon text-success" />
+                @if (ProfileData != null)
+                {
+                    <span Class="text-success">@ProfileData.TotalHours</span>
+                }
+            </div>
+        </RadzenCard>
+</div>
+
+@if (chartData.Any())
+{
+    @*prima riga dei charts*@
+    <div class="charts-row" style="margin-top:1rem;">
+
+        @*status pie chart*@
+        <div class="chart-card chart-sm">
+            <div class="card-section-title">STATUS DISTRIBUTION</div>
+            <RadzenChart Style="height:200px">
+                <RadzenLegend Position="LegendPosition.Right" />
+                <RadzenPieSeries Data="@chartData"
+                                 Title="Games Overview"
+                                 CategoryProperty="Status"
+                                 ValueProperty="Value"
+                                 Fills="@(new[] { "#3ddc84", "#f5c842", "#7c5cfc", "#6b6b85" })">
+                    <RadzenSeriesDataLabels Visible="true" />
+                </RadzenPieSeries>
+            </RadzenChart>
+        </div>
+        <div class="chart-card chart-lg">
+            <div class="card-section-title">HOURS PER GAME</div>
+            <RadzenChart Style="height:200px">
+                <RadzenBarSeries Data="@HoursChartData"
+                                 CategoryProperty="Title"
+                                 ValueProperty="Hours"
+                                 Fill="#7c5cfc"
+                                 Title="Hours">
+                    <RadzenSeriesDataLabels Visible="false" />
+                </RadzenBarSeries>
+                <RadzenCategoryAxis Padding="20" />
+                <RadzenValueAxis>
+                    <RadzenGridLines Visible="true" Stroke="#1e1e3a" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+
+            </RadzenChart>
+        </div>
+    </div>
+
+    @*seconda riga dei charts*@
+    <div class="charts-row-2">
+
+        @*rating per videogioco*@
+        <div class="chart-card chart-lg">
+            <div class="card-section-title">RATING PER GAME</div>
+            <RadzenChart Style="height:200px">
+                <RadzenBarSeries Data="@RatingChartData"
+                                 CategoryProperty="Title"
+                                 ValueProperty="Rating"
+                                 Fill="#f5c842"
+                                 Title="Rating">
+                    <RadzenSeriesDataLabels Visible="false" />
+                </RadzenBarSeries>
+                <RadzenCategoryAxis Padding="20" />
+                <RadzenValueAxis Min="0" Max="10">
+                    <RadzenGridLines Visible="true" Stroke="#1e1e3a" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+            </RadzenChart>
+        </div>
+
+        @*numero di giochi aggiunti nel corso del tempo*@
+        <div class="chart-card chart-sm">
+            <div class="card-section-title">GAMES ADDED OVER TIME</div>
+            <RadzenChart Style="height:200px">
+                <RadzenLineSeries Data="@GamesOverTimeData"
+                                  CategoryProperty="Month"
+                                  ValueProperty="Count"
+                                  Stroke="#3ddc84"
+                                  StrokeWidth="2"
+                                  Title="Games">
+                    <RadzenMarkers MarkerType="MarkerType.Circle" Fill="#3ddc84" />
+                </RadzenLineSeries>
+                <RadzenCategoryAxis>
+                    <RadzenGridLines Visible="false" />
+                </RadzenCategoryAxis>
+                <RadzenValueAxis>
+                    <RadzenGridLines Visible="true" Stroke="#1e1e3a" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+
+            </RadzenChart>
+
+        </div>
+    </div>
+
+}
+}
+@code
+{
+
+    private AuthenticationState? authState;
+    private ClaimsPrincipal? user;
+    private string? userId;
+
+    private GetUserGamesDto? ProfileData;
+
+    private record HoursData(string Title, int Hours);
+    private record StatusData(string Status, int Value);
+    private record RatingData(string Title, int rating);
+    private record TimeData(String Month, int Count);
+
+
+    private List<HoursData> HoursChartData = new();
+    private List<PieChartItems> chartData = new();
+    private List<RatingData> RatingChartData = new();
+    private List<TimeData> GamesOverTimeData = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        user = authState.User;
+
+        userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        await LoadUserGames();
+
+        BuildCharts();
+    }
+
+
+    private async Task LoadUserGames()
+    {
+        ProfileData = await UserGamesService.GetUserGamesByIdAsync(userId);
+    }
+
+
+    private void BuildCharts()
+    {
+        if (ProfileData == null) return;
+
+
+        chartData = new List<PieChartItems>
+                {
+                    new PieChartItems { Status = "Completed", Value = ProfileData.Completed},
+                    new PieChartItems {Status = "Playing", Value = ProfileData.Playing},
+                    new PieChartItems { Status = "To Play", Value = ProfileData.ToPlay},
+                    new PieChartItems { Status = "Dropped", Value = ProfileData.Dropped}
+                }
+        .Where(x => x.Value > 0)
+        .ToList();
+
+        HoursChartData = ProfileData.Games
+            .Where(g => g.HoursPlayed.HasValue && g.HoursPlayed > 0)
+            .OrderByDescending(g => g.HoursPlayed)
+            .Take(10)
+            .Select(g => new HoursData(
+                g.Videogame.Title.Length > 15 ? g.Videogame.Title[..15] + "..." : g.Videogame.Title,
+                g.HoursPlayed!.Value))
+            .ToList();
+
+        RatingChartData = ProfileData.Games
+        .Where(g => g.PersonalRating.HasValue && g.PersonalRating > 0)
+        .OrderByDescending(g => g.PersonalRating)
+        .Select(g => new RatingData(
+            g.Videogame.Title.Length > 15 ? g.Videogame.Title[..15] + "..." : g.Videogame.Title,
+            g.PersonalRating!.Value))
+        .ToList();
+
+        var now = DateTime.Now;
+        GamesOverTimeData = Enumerable.Range(0, 12)
+        .Select(i => now.AddMonths(-11 + i))
+        .Select(d => new TimeData(
+            d.ToString("MMM yy", System.Globalization.CultureInfo.InvariantCulture),
+            ProfileData.Games.Count(g => g.TimeStampAdded.HasValue &&
+                              g.TimeStampAdded.Value.Year == d.Year &&
+                              g.TimeStampAdded.Value.Month == d.Month)))
+            .ToList();
+
+    }
+}

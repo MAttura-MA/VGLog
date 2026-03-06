@@ -104,18 +104,6 @@ namespace VGLog.Services
                 MostPlayedGame = mostPlayedGame,
                 MostRecentlyCompletedGame = mostRecentlyCompletedGame
             };
-            //var dto = new GetUserGamesDto
-            //{
-            //    Games = userGames ?? new List<UserGame>(),
-            //    Total = userGames?.Count ?? 0,
-            //    Completed = userGames?.Count(g => g.GameStatus == GameStatus.Completed) ?? 0,
-            //    Playing = userGames?.Count(g => g.GameStatus == GameStatus.Playing) ?? 0,
-            //    ToPlay = userGames?.Count(g => g.GameStatus == GameStatus.Toplay) ?? 0,
-            //    Dropped = userGames?.Count(g => g.GameStatus == GameStatus.Dropped) ?? 0,
-            //    TotalHours = userGames?.Sum(g => g.HoursPlayed) ?? 0
-            //};
-
-            //return dto;
         }
 
         public async Task EditUserGameAsync(UpdateUserGameDto dto)
