@@ -1,4 +1,6 @@
-﻿@using VGLog.Models
+﻿@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@using VGLog.Models
 @using VGLog.Services
 @using VGLog.Services.DTOs
 
@@ -8,29 +10,52 @@
 
 
 <RadzenTemplateForm TItem="UpdateUserGameDto" data="@EditDto" Submit="@OnSubmit">
-    <div class="p-3">
-        <RadzenLabel Text="Hours played" />
-        <RadzenNumeric @bind-Value="EditDto.HoursPlayed"
-        Style="width:100%" />
+    <div style="display:flex; flex-direction:column; gap:16px; padding:8px 0;">
 
-        <RadzenLabel Text="Notes" />
-        <InputText @bind-Value="EditDto.Notes"
-        Style="width:100%" />
-
-        <RadzenLabel Text="Rating" />
-        <RadzenNumeric @bind-Value="EditDto.PersonalRating" Min="1" Max="10"
-        Style="width:100%" />
-        <div class="mt-3"
-        >
-            <RadzenButton Text="Cancel"
-            Click="@Close"
-            ButtonStyle="ButtonStyle.Secondary" />
-
-            <RadzenButton Text="Save"
-            ButtonType="ButtonType.Submit"
-            Style="margin-right:10px" />
-
+        <div>
+            <RadzenLabel Text="Game Status" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;" />
+            <RadzenDropDown @bind-Value="@EditDto.GameStatus"
+                            Data="@GameStatuses"
+                            Placeholder="Game Status"
+                            TextProperty="Value"
+                            ValueProperty="Key"
+                            Style="width:100%; margin-top:4px;" />
         </div>
+
+    </div>
+
+    <div>
+        <RadzenLabel Text="Hours Played" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;" />
+        <RadzenNumeric @bind-Value="EditDto.HoursPlayed"
+                       Style="width:100%; margin-top:4px;" />
+    </div>
+
+    <div>
+        <RadzenLabel Text="Notes" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;"/>
+        <RadzenTextArea @bind-Value="EditDto.Notes" Rows="3"
+                   Style="width:100%; margin-top:4px; resize:none;" />
+    </div>
+
+    <div>
+        <RadzenLabel Text="Rating" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;" />
+        <RadzenRating Value="@(EditDto.PersonalRating ?? 0)"
+                      ValueChanged="@(v => EditDto.PersonalRating = v)"
+                      Stars="10"
+                      Style="margin-top:4px; width:100%" />
+    </div>
+
+
+
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+        <RadzenButton Text="Cancel"
+                      Click="@Close"
+                      ButtonStyle="ButtonStyle.Secondary" />
+
+        <RadzenButton Text="Save"
+                      ButtonType="ButtonType.Submit"
+                      Style="margin-right:10px" />
+
     </div>
 </RadzenTemplateForm>
 
@@ -52,6 +77,7 @@
                 GameStatus = UserGame.GameStatus
             };
     }
+
     private async Task OnSubmit(UpdateUserGameDto dto)
     {
         await UserGamesService.EditUserGameAsync(dto);
@@ -63,4 +89,24 @@
     {
         DialogService.Close(false);
     }
+
+    private async Task MarkAsdropped(UserGame item)
+    {
+
+        await UserGamesService.EditUserGameStatusAsync(item.Id, GameStatus.Dropped);
+
+        item.GameStatus = GameStatus.Dropped;
+
+        StateHasChanged();
+    }
+
+    protected List<KeyValuePair<GameStatus, string>> GameStatuses =
+    Enum.GetValues<GameStatus>()
+        .Select(e => new KeyValuePair<GameStatus, string>(
+            e,
+            e.GetType()
+             .GetMember(e.ToString())[0]
+             .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
+        ))
+        .ToList();
 }

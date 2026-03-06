@@ -3,11 +3,14 @@
     display: flex;
     flex-direction: column;
     background-color: #0d0d12;
+    min-height: 100vh;
 }
 
 main {
     background: #0f0f18;
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar {
@@ -77,6 +80,12 @@ main {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }
+
+
+}
+
+article.content {
+    flex: 1;
 }
 
 #blazor-error-ui {
@@ -102,3 +111,9 @@ main {
 
 
 
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #0d0d12;
+}
