@@ -22,6 +22,7 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddRadzenComponents();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();

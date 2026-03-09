@@ -2,7 +2,6 @@
 @rendermode InteractiveServer
 @attribute [Authorize]
 
-<RadzenDialog />
 @using System.Reflection
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -39,7 +38,7 @@
     <div class="opt3-layout">
         <div class="opt3-left">
             <div class="field">
-                <span class="option-label">Game</span>
+                <span class="option-label" style="margin-top:0.5rem">Game</span>
                 <RadzenDropDown @bind-Value="@SelectedGameId"
                                 Data="@AvailableGames"
                                 TextProperty="Title"
@@ -357,4 +356,5 @@
 
         NotificationService.Notify(NotificationSeverity.Success, "Deleted", $"{item.Videogame.Title} removed from your profile.");
     }
+
 }
