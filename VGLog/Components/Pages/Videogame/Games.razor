@@ -346,7 +346,7 @@
         if (confirmed != false)
             return;
 
-        await UserGamesService.DeleteUserGameAsync(item.Id);
+        await UserGamesService.DeleteUserGameAsync(item.Id, userId);
 
         UserGames = UserGames.Where(g => g.Id != item.Id).ToList(); // crea nuova lista senza l'elemento
 

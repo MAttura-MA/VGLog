@@ -224,38 +224,6 @@
 
     }
 
-    private async Task MarkAsdropped(UserGame item)
-    {
-
-        await UserGamesService.EditUserGameStatusAsync(item.Id, GameStatus.Dropped);
-
-        item.GameStatus = GameStatus.Dropped;
-
-        StateHasChanged();
-    }
-
-    private async Task DeleteUserGame(UserGame item)
-    {
-        if (item.UserId != userId)
-            throw new UnauthorizedAccessException();
-
-        bool? confirmed = await DialogService.Confirm(
-                $"Are you sure you want to delete {item.Videogame.Title}?",
-                "Confirm Delete",
-                new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
-
-        if (!confirmed.HasValue || !confirmed.Value)
-            return;
-
-        await UserGamesService.DeleteUserGameAsync(item.Id);
-
-        UserGames.Remove(item);
-
-        StateHasChanged();
-
-        NotificationService.Notify(NotificationSeverity.Success, "Deleted", $"{item.Videogame.Title} removed from your profile.");
-    }
-
     public string GetDisplayNameService(ClaimsPrincipal user, string id)
     {
         return UserGamesService.GetDisplayName(user, id);

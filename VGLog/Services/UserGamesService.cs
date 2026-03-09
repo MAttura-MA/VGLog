@@ -134,9 +134,11 @@ namespace VGLog.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<UserGame?> DeleteUserGameAsync(int Id)
+        public async Task<UserGame?> DeleteUserGameAsync(int GameId, string userId)
         {
-            var entity = await _context.UserGames.FindAsync(Id);
+            var entity = await _context.UserGames
+                .Where(u => u.UserId == userId && u.Id == GameId)
+                .FirstOrDefaultAsync();
 
             if (entity != null)
             {
