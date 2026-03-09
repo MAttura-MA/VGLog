@@ -298,3 +298,11 @@ body {
     margin: 0 !important;
     background-color: #070711 !important;
 }
+
+.input-text {
+    border-radius: 14px;
+    border: 1px solid rgba(124, 92, 252, 0.4) !important;
+    background-color: #15151e;
+    --bs-border-color: #15151e;
+    color: white;
+}

@@ -109,10 +109,6 @@
     cursor: default;
 }
 
-    .h-stat-card:hover {
-        border-color: rgba(252,92,125,0.35);
-        transform: translateY(-2px);
-    }
 
     .h-stat-card:nth-child(1) {
         animation-delay: .05s;

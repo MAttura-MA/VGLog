@@ -13,15 +13,15 @@
 
     <DataAnnotationsValidator />
     <ValidationSummary />
-    
+
     <div class="mb-3">
         <label for="email" class="form-label">Email</label>
-        <InputText @bind-Value="model.Email" class="form-control" id="Email" />
+        <InputText @bind-Value="model.Email" class="form-control input-text" id="Email" />
     </div>
 
     <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <InputText @bind-Value="model.Password" type="password" class="form-control" id="Password" />
+        <InputText @bind-Value="model.Password" type="password" class="form-control input-text" id="Password" />
     </div>
 
     <div class="mb-3 form-check">
@@ -29,11 +29,18 @@
         <label for="remember" class="form-check-label">Remember me</label>
     </div>
 
-    <button type="submit" class="btn btn-primary">Login</button>
+    <div style="display:flex; gap: 16px; margin-top:12px; align-items: center">
+        <RadzenButton ButtonType="ButtonType.Submit"
+                      Text="Login"
+                      Icon="login"
+                      Style="background:#7c5cfc; border:none; padding: 0.6rem 1.5rem; border-radius: 8px; height:38px;" />
 
-    <NavLink class="btn btn-primary" href="/account/register">
-        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Register
-    </NavLink>
+        <NavLink href="/account/register"
+                 style="background:transparent; border: 1px solid #7c5cfc; color:#7c5cfc; padding: 0.6rem 1.5rem; border-radius: 8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; height:38px; box-sizing:border-box;">
+            <RadzenIcon Icon="person_add" />
+            Register
+        </NavLink>
+    </div>
 
 </EditForm>
 
@@ -60,7 +67,12 @@
         }
         else
         {
-            errorMessage = "Login fallito. Controlla email e password.";
+            errorMessage = "Login failed. Try again.";
         }
+    }
+
+    private void GoToRegister()
+    {
+        Navigation.NavigateTo("/account/register");
     }
 }

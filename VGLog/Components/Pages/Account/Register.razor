@@ -17,30 +17,35 @@
 
     <div>
         <label for="email" class="form-label">Email</label>
-        <InputText @bind-Value="model.Email" class="form-control" id="Email" />
+        <InputText @bind-Value="model.Email" class="form-control input-text" id="Email" />
     </div>
 
     <div>
         <label for="DisplayName" class="form-label">Display name</label>
-        <InputText @bind-Value="model.DisplayName" class="form-control" id="DisplayName" />
+        <InputText @bind-Value="model.DisplayName" class="form-control input-text" id="DisplayName" />
     </div>
 
     <div>
         <label for="Password" class="form-label">Password</label>
-        <InputText type="password" @bind-Value="model.Password" class="form-control" id="Password" />
+        <InputText type="password" @bind-Value="model.Password" class="form-control input-text" id="Password" />
     </div>
 
     <div>
         <label for="ConfirmPassword" class="form-label">Confirm password</label>
-        <InputText type="password" @bind-Value="model.ConfirmPassword" class="form-control" id="ConfirmPassword" />
+        <InputText type="password" @bind-Value="model.ConfirmPassword" class="form-control input-text" id="ConfirmPassword" />
     </div>
 
-    <div>
+    <div style="display:flex; gap: 16px; margin-top:12px; align-items: center">
 
-        <button type="submit" class="btn btn-primary">Register</button>
+        <RadzenButton ButtonType="ButtonType.Submit"
+                      Text="Register"
+                      Icon="person_add"
+                      Style="background:#7c5cfc; border:none; padding: 0.6rem 1.5rem; border-radius: 8px; height:38px;" />
 
-        <NavLink class="btn btn-primary" href="/account/login">
-            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Login
+        <NavLink href="/account/login"
+                 style="background:transparent; border: 1px solid #7c5cfc; color:#7c5cfc; padding: 0.6rem 1.5rem; border-radius: 8px; height:38px; box-sizing:border-box; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-size:0.875rem; font-weight:500;">
+            <RadzenIcon Icon="login" />
+            Login
         </NavLink>
 
     </div>

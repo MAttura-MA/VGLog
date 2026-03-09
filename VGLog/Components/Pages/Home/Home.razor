@@ -144,10 +144,17 @@ else
     <div class="h-guest">
         <div class="h-guest-title">Welcome to VGLog</div>
         <p class="h-guest-sub">Track your games, check your playtime and keep track of your completed games.</p>
-        <div class="h-guest-actions">
-            <a class="h-btn-primary" href="/account/login">Login</a>
-            <a class="h-btn-ghost" href="/account/register" style="padding:11px 28px; text-decoration:none; display:inline-block;">Register</a>
-        </div>
+        <NavLink href="/account/login"
+                 style="background:#7c5cfc; border:none; padding: 0.6rem 1.5rem; border-radius: 8px; height:38px; box-sizing:border-box; text-decoration:none; display:inline-flex; align-items:center; gap:4px; color:white; font-size:0.875rem; font-weight:500;">
+            <RadzenIcon Icon="login" />
+            Login
+        </NavLink>
+
+        <NavLink href="/account/register"
+                 style="background:transparent; border: 1px solid #7c5cfc; color:#7c5cfc; padding: 0.6rem 1.5rem; border-radius: 8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px; height:38px; box-sizing:border-box;">
+            <RadzenIcon Icon="person_add" />
+            Register
+        </NavLink>
     </div>
 }
 @code

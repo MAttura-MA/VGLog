@@ -3,15 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using VGLog.Views;
 using VGLog.Data;
 using VGLog.Models;
 using VGLog.Services;
 using VGLog.Services.Interfaces;
-using Microsoft.AspNetCore.Components;
 using Radzen;
-using VGLog;
 using VGLog.Components;
 
 var builder = WebApplication.CreateBuilder(args);
