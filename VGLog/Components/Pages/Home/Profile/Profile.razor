@@ -29,7 +29,7 @@
 <PageTitle>VGLog – Profile</PageTitle>
 
 <div>
-    <RadzenCard Style="display:flex; align-items:center; gap:1.5rem; padding:1.5rem;" class="stat-card">
+    <div Style="display:flex; align-items:center; gap:1.5rem; padding:1.5rem;" class="stats-container">
 
         @if (!string.IsNullOrEmpty(avatarBase64))
         {
@@ -44,11 +44,11 @@
             <h3 style="margin:0; color:#666; font-size:0.9rem; color: #9c9487;">bioAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA futura</h3>
 
         </div>
-    </RadzenCard>
+    </div>
 </div>
 
 <div class="stats-container" Style="margin-top: 1rem; display:flex">
-    <RadzenCard Class="stat-card" Style="width:25%">
+    <div class="chart-card chart-sm">
         <div class="stat-header text-primary">
             <span>Total Games</span>
         </div>
@@ -59,9 +59,9 @@
                 <span Class="text-primary">@ProfileData.Total</span>
             }
         </div>
-    </RadzenCard>
+    </div>
 
-    <RadzenCard Class="stat-card" Style="width:24%; margin-left:1rem">
+    <div Class="chart-card chart-sm">
         <div class="stat-header text-success">
             <span>Completed</span>
         </div>
@@ -72,9 +72,9 @@
                 <span Class="text-success">@ProfileData.Completed</span>
             }
         </div>
-    </RadzenCard>
+    </div>
 
-    <RadzenCard Class="stat-card" Style="width:24%; margin-left:1rem">
+    <div Class="chart-card chart-sm">
         <div class="stat-header text-purple">
             <span>Hours Played</span>
         </div>
@@ -85,9 +85,9 @@
                 <span Class="text-purple">@ProfileData.TotalHours</span>
             }
         </div>
-    </RadzenCard>
+    </div>
 
-    <RadzenCard Class="stat-card" Style="width:24%; margin-left:1rem">
+    <div Class="chart-card chart-sm">
         <div class="stat-header text-green">
             <span>Completion Rate</span>
         </div>
@@ -95,10 +95,11 @@
             <RadzenIcon Icon="done_all" Class="stat-icon text-green" />
             @ProfileData?.CompletionRate%
         </div>
-    </RadzenCard>
+    </div>
 </div>
-<div class="stats-container" Style="margin-top:1rem; display:flex">
-    <RadzenCard Class="stat-card" Style="width:33%">
+
+<div class="stats-container" Style="margin-top: 1rem; display:flex">
+    <div Class="chart-card chart-lg">
         <div class="stat-header text-yellow">
             <span>Average Rating</span>
         </div>
@@ -117,10 +118,10 @@
                 }
             </span>
         </div>
-    </RadzenCard>
+    </div>
 
-    <RadzenCard Class="stat-card" Style="width:32%; margin-left:1rem">
-        <div class="stat-header" style="color: #9c9487">
+    <div Class="chart-card chart-lg">
+        <div class="stat-header">
             <span>Most played</span>
         </div>
         <div class="stat-value">
@@ -133,10 +134,10 @@
                 <span style="font-size:0.85rem">@ProfileData?.MostPlayedGame?.HoursPlayed hours</span>
             </div>
         </div>
-    </RadzenCard>
+    </div>
 
-    <RadzenCard Class="stat-card" Style="width:33%; margin-left:1rem">
-        <div class="stat-header" style="color: #9c9487">
+    <div Class="chart-card chart-lg">
+        <div class="stat-header">
             <span>Recently Completed</span>
         </div>
         <div class="stat-value" style="color: #9c9487">
@@ -155,7 +156,7 @@
                 </span>
             </div>
         </div>
-    </RadzenCard>
+    </div>
 </div>
 
 @code {

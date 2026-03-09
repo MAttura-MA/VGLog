@@ -39,7 +39,7 @@ else
 {
     
     <div class="stats-container" Style="margin-top: 1rem; display:flex">
-        <RadzenCard Class="stat-card" Style="width:24%; margin-left:1rem">
+        <div class="chart-card chart-sm">
             <div class="stat-header text-primary">
                 <span>Total Games</span>
             </div>
@@ -50,9 +50,9 @@ else
                     <span Class="text-primary">@ProfileData.Total</span>
                 }
             </div>
-    </RadzenCard>
+        </div>
 
-        <RadzenCard Class="stat-card" Style="width:24%; margin-left:1rem">
+        <div class="chart-card chart-sm">
             <div class="stat-header text-success">
                 <span>Total Hours</span>
             </div>
@@ -63,8 +63,8 @@ else
                     <span Class="text-success">@ProfileData.TotalHours</span>
                 }
             </div>
-        </RadzenCard>
-</div>
+        </div>
+    </div>
 
 @if (chartData.Any())
 {
@@ -128,7 +128,7 @@ else
         </div>
 
         @*numero di giochi aggiunti nel corso del tempo*@
-        <div class="chart-card chart-sm">
+        <div class="chart-card chart-sm" style="margin-top:1rem">
             <div class="card-section-title">GAMES ADDED OVER TIME</div>
             <RadzenChart Style="height:200px">
                 <RadzenLineSeries Data="@GamesOverTimeData"
