@@ -21,11 +21,6 @@
 @inject DialogService DialogService
 @inject UserManager<ApplicationUser> UserManager
 
-
-<RadzenDialog />
-
-<RadzenNotification />
-
 <PageTitle>VGLog – Profile</PageTitle>
 
 <div>
@@ -35,14 +30,36 @@
         {
             <img src="@avatarBase64" style="width:256px; height:256px; border-radius:12px; object-fit:cover;" />
         }
+        else
+        {
+            <div style="width:256px; height:256px; border-radius:12px; background:#1e1e1e;
+                        display:flex; align-items:center; justify-content:center; border:2px dashed #444;">
+                <RadzenIcon Icon="person" Style="font-size:6rem; color:#555;" />
+            </div>
+        }
+
         <div style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom: 9rem">
-            <h2 style="margin:0; font-size:4rem; font-weight:700; color: #9c9487;">@displayName</h2>
+            <div style="display:flex; align-items:center; gap:1rem;">
+                <h2 style="margin:0; font-size:4rem; font-weight:700; color: #9c9487;">@displayName</h2>
+                <RadzenButton Icon="edit"
+                Text="Edit Profile"
+                ButtonStyle="ButtonStyle.Light"
+                Size="ButtonSize.Small"
+                Style="margin-top:0.4rem"
+                Click="OpenEditDialog" />
+            </div>
             <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color: #9c9487;">
                 <RadzenIcon Icon="calendar_today" Style="font-size:16px;" />
                 <span>Joined: @joinedDate</span>
             </div>
-            <h3 style="margin:0; color:#666; font-size:0.9rem; color: #9c9487;">bioAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA futura</h3>
-
+            @if (!string.IsNullOrWhiteSpace(bio))
+            {
+                <p style ="margin:0.25rem 0 0 0; color:#9c9487; font-size:0.9rem; max-width:480px;">@bio</p>
+            }
+            else
+            {
+                <p style="margin:0.25rem 0 0 0; color:#555; font-size:0.85rem; font-style:italic;">No bio yet — click Edit Profile to add one.</p>
+            }
         </div>
     </div>
 </div>
@@ -131,7 +148,11 @@
             }
             <div style="display:flex; flex-direction:column; gap:0.2rem; color: #9c9487 ">
                 <span style="font-size:1rem; font-weight:700;">@ProfileData?.MostPlayedGame?.Videogame.Title</span>
-                <span style="font-size:0.85rem">@ProfileData?.MostPlayedGame?.HoursPlayed hours</span>
+                @if (@ProfileData?.MostPlayedGame?.HoursPlayed != null)
+                {
+                    <span style="font-size:0.85rem">@ProfileData?.MostPlayedGame?.HoursPlayed hours</span>
+
+                }
             </div>
         </div>
     </div>
@@ -149,10 +170,10 @@
                 <span style="font-size:1rem; font-weight:700;">@ProfileData?.MostRecentlyCompletedGame?.Videogame.Title</span>
                 <span style="font-size:0.85rem">
                     @(
-                     ProfileData.MostRecentlyCompletedGame?.CompletedAt.HasValue == true
-                     ? "on " + ProfileData.MostRecentlyCompletedGame.CompletedAt.Value.ToString("MMMM dd, yyyy", System.Globalization.CultureInfo.InvariantCulture)
-                     : ""
-                     )
+                                         ProfileData.MostRecentlyCompletedGame?.CompletedAt.HasValue == true
+                                         ? "on " + ProfileData.MostRecentlyCompletedGame.CompletedAt.Value.ToString("MMMM dd, yyyy", System.Globalization.CultureInfo.InvariantCulture)
+                                         : ""
+                                         )
                 </span>
             </div>
         </div>
@@ -178,7 +199,8 @@
 
     private string? displayName;
     private string? avatarBase64;
-    private string joinedDate;
+    private string? bio;
+    private string joinedDate = string.Empty;
     private GetUserGamesDto? ProfileData;
     private List<UserGame> UserGames = new();
 
@@ -196,18 +218,24 @@
             return;
         }
 
-        var currentUser = await UserManager.FindByIdAsync(userId);
-        joinedDate = currentUser.UserCreationTime.ToString("dd MMMM, yyyy", System.Globalization.CultureInfo.InvariantCulture);
-
-
+        await RefreshUserData();
         await LoadUserGames();
+
+    }
+
+    private async Task RefreshUserData()
+    {
+        var currentUser = await UserManager.FindByIdAsync(userId!);
+        if (currentUser == null) return;
+
+        joinedDate = currentUser.UserCreationTime.ToString("dd MMMM, yyyy", System.Globalization.CultureInfo.InvariantCulture);
+        bio = currentUser.Bio;
 
         avatarBase64 = currentUser.Avatar != null
             ? $"data:image/png;base64,{Convert.ToBase64String(currentUser.Avatar)}"
             : null;
 
-        displayName = GetDisplayNameService(user, userId);
-
+        displayName = GetDisplayNameService(user!, userId!);
     }
 
     private async Task LoadUserGames()
@@ -227,5 +255,32 @@
     public string GetDisplayNameService(ClaimsPrincipal user, string id)
     {
         return UserGamesService.GetDisplayName(user, id);
+    }
+
+    private async Task OpenEditDialog()
+    {
+        var result = await DialogService.OpenAsync<EditProfileDialog>(
+            "Edit Profile",
+            new Dictionary<string, object>
+                    {
+                { "UserId",        userId! },
+                { "CurrentBio",    bio ?? string.Empty },
+                { "CurrentAvatar", avatarBase64 ?? string.Empty }
+                    },
+                new DialogOptions
+                    {
+                        Width = "500px",
+                        Resizable = false,
+                        Draggable = true,
+                        CloseDialogOnOverlayClick = true
+                    }
+        );
+
+        if (result is true)
+        {
+            await RefreshUserData();
+            NotificationService.Notify(NotificationSeverity.Success, "Saved", "Profile updated successfully!");
+            StateHasChanged();
+        }
     }
 }

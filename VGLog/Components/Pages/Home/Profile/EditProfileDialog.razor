@@ -1,0 +1,164 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Forms
+@using VGLog.Data
+@using VGLog.Models
+
+@inject UserManager<ApplicationUser> UserManager
+@inject Radzen.NotificationService NotificationService
+@inject IJSRuntime JS
+
+<div style="display:flex; flex-direction:column; gap:1.5rem; padding:0.5rem; min-width:420px;">
+    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+
+        <label style="font-weight:600; color:#9c9487; font-size:0.9rem;">Profile Picture</label>
+        <div style="display:flex; align-items:center; gap:1.25rem;">
+            @if (!string.IsNullOrEmpty(PreviewAvatar))
+            {
+                <img src="@PreviewAvatar"
+                style="width:96px; height:96px; border-radius:10px; object-fit:cover; border:2px solid #444;" />
+            }
+            else
+            {
+                <div style="width:96px; height:96px; border-radius:10px; background:#1e1e1e;
+                            display:flex; align-items:center; justify-content:center; border:2px dashed #555;">
+                    <RadzenIcon Icon="person" Style="font-size:2.5rem; color:#555;" />
+                </div>
+            }
+
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                <InputFile id="avatarUploadInput" OnChange="OnAvatarSelected"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                style="display:none;" />
+
+                <RadzenButton Text="Choose Image"
+                Icon="upload"
+                ButtonStyle="ButtonStyle.Secondary"
+                Size="ButtonSize.Small"
+                Click="@(async () => await JS.InvokeVoidAsync("eval", "document.getElementById('avatarUploadInput').click()"))" />
+
+                @if (!string.IsNullOrEmpty(PreviewAvatar))
+                {
+                    <RadzenButton Text="Remove"
+                    Icon="delete"
+                    ButtonStyle="ButtonStyle.Danger"
+                    Size="ButtonSize.Small"
+                    Click="RemoveAvatar" />
+                }
+
+
+
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(avatarError))
+        {
+            <span style="color:#e74c3c; font-size:0.8rem;">@avatarError</span>
+        }
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+        <label style="font-weight:600; color:#9c9487; font-size:0.9rem;">Bio</label>
+        <RadzenTextArea @bind-Value="Bio"
+        Rows="4"
+        MaxLength="300"
+        Placeholder="Tell something about yourself..."
+        Style="width:100%; resize:none;" />
+        <span style="font-size:0.75rem; color:#666; text-align:right;">@(Bio?.Length ?? 0)/300</span>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:0.5rem;">
+        <RadzenButton Text="Cancel"
+        ButtonStyle="ButtonStyle.Light"
+        Click="@(() => DialogService.Close(false))" />
+        <RadzenButton Text="Save Changes"
+        Icon="save"
+        ButtonStyle="ButtonStyle.Primary"
+        IsBusy="@isSaving"
+        Click="SaveChanges" />
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string UserId { get; set; } = default!;
+    [Parameter] public string? CurrentBio { get; set; }
+    [Parameter] public string? CurrentAvatar { get; set; }
+
+    [Inject] private DialogService DialogService { get; set; } = default!;
+
+    private string? Bio;
+    private string? PreviewAvatar;
+    private byte[]? newAvatarBytes;
+    private bool removeAvatar = false;
+    private bool isSaving = false;
+    private string? avatarError;
+
+    protected override void OnInitialized()
+    {
+        Bio = CurrentBio;
+        PreviewAvatar = CurrentAvatar;
+    }
+    private async Task OnAvatarSelected(InputFileChangeEventArgs e)
+    {
+        avatarError = null;
+        var file = e.File;
+
+        if (file.Size > 2 * 1024 * 1024)
+        {
+            avatarError = "image must be under 2MB.";
+            return;
+        }
+
+        var allowed = new[] { "image/jpeg", "image/png", "image/webp" };
+        if(!allowed.Contains(file.ContentType))
+        {
+            avatarError = "Only JPG, PNG or WebP are allowed";
+            return;
+        }
+
+        using var ms = new MemoryStream();
+        await file.OpenReadStream(2 * 1024 * 1024).CopyToAsync(ms);
+        newAvatarBytes = ms.ToArray();
+        PreviewAvatar = $"data:{file.ContentType};base64,{Convert.ToBase64String(newAvatarBytes)}";
+        removeAvatar = false;
+        StateHasChanged();
+
+    }
+
+    private void RemoveAvatar()
+    {
+        PreviewAvatar = null;
+        newAvatarBytes = null;
+        removeAvatar = true;
+    }
+
+    private async Task SaveChanges()
+    {
+        isSaving = true;
+        try
+        {
+            var appUser = await UserManager.FindByIdAsync(UserId);
+            if (appUser == null) return;
+
+            appUser.Bio = Bio;
+
+            if (newAvatarBytes != null)
+                appUser.Avatar = newAvatarBytes;
+            else if (removeAvatar)
+                appUser.Avatar = null;
+
+            var result = await UserManager.UpdateAsync(appUser);
+
+            if (result.Succeeded)
+                DialogService.Close(true);
+            else
+                NotificationService.Notify(NotificationSeverity.Error, "Error", "Could not save changes.");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+
+}
+
