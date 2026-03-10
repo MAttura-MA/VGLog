@@ -25,4 +25,8 @@
     <PackageReference Include="Radzen.Blazor" Version="8.7.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\css\Login.css" />
+  </ItemGroup>
+
 </Project>

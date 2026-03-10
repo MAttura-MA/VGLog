@@ -2,6 +2,7 @@
 using VGLog.Models;
 using VGLog.Services.Interfaces;
 using System.Security.Claims;
+using VGLog.Models.ViewModels;
 
 namespace VGLog.Services
 {
@@ -42,9 +43,15 @@ namespace VGLog.Services
 
         public async Task<SignInResult> LoginAsync(LoginViewModel model)
         {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                return SignInResult.Failed;
+            }
 
             return await _SignInManager.PasswordSignInAsync(
-                model.Email,
+                user.UserName,
                 model.Password,
                 model.RememberMe,
                 lockoutOnFailure: false);

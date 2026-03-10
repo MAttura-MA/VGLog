@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using VGLog.Models;
+using VGLog.Models.ViewModels;
 
 namespace VGLog.Services.Interfaces
 {

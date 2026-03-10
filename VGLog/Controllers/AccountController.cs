@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
-using VGLog.Models;
+using VGLog.Models.ViewModels;
 using VGLog.Services;
 using VGLog.Services.Interfaces;
 
@@ -11,7 +11,7 @@ namespace VGLog.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
         private readonly ILogger _logger;
@@ -23,13 +23,7 @@ namespace VGLog.Controllers
             _logger = logger;
         }
 
-        [AllowAnonymous]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        [HttpPost]
+        [HttpPost("register")]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -40,8 +34,6 @@ namespace VGLog.Controllers
             try
             {
 
-                Console.WriteLine($"Email: {model.Email}, Password is null? {model.Password == null}");
-
                 var result = await _accountService.RegisterAsync(model);
 
                 if (!result.Succeeded)
@@ -49,7 +41,7 @@ namespace VGLog.Controllers
                     foreach (var error in result.Errors)
                         ModelState.AddModelError("", error.Description);
 
-                    return View(model);
+                    return BadRequest(model);
                 }
 
                 return RedirectToAction("Login");
@@ -58,28 +50,28 @@ namespace VGLog.Controllers
             {
                 _logger.LogError(ex, "An error occurred while creating an offer for User {UserId}.", User?.Identity?.Name ?? "Unknown");
                 ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again later.");
-                return View(model);
+                return StatusCode(500);
             }
         }
-        
 
-        [AllowAnonymous]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            //if (!ModelState.IsValid)
-            //    return View(model);
+            try
+            {
+                var result = await _accountService.LoginAsync(model);
 
-            var result = await _accountService.LoginAsync(model);
+                if (result.Succeeded)
+                    return Ok(new { success = true });
 
-            return Ok(result.Succeeded);
+                return Unauthorized(new { success = false, message = "Invalid credentials" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Login failed");
+                return StatusCode(500, new { success = false, message = "Server error" });
+            }
         }
 
         [Authorize]

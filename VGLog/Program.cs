@@ -9,6 +9,7 @@ using VGLog.Services;
 using VGLog.Services.Interfaces;
 using Radzen;
 using VGLog.Components;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,11 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AllowAnonymousToPage("/Account/Login");
+});
+
 builder.Services.AddRadzenComponents();
 
 builder.Services.AddHttpContextAccessor();
@@ -92,6 +98,12 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddDbContext <AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped(sp =>
+{
+    var navigationManager = sp.GetRequiredService<NavigationManager>();
+    return new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -125,9 +137,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapStaticAssets();
-
+app.MapRazorPages();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-
+//app.MapBlazorHub();
 //app.MapRazorPages();
 
 app.Run();
