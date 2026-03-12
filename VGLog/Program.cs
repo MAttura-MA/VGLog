@@ -94,11 +94,26 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-var dbPath = builder.Environment.IsProduction()
-    ? Path.Combine(Environment.GetEnvironmentVariable("HOME"), "vglog.db")
-    : "vglog.db";
+string dbPath;
+
+if (builder.Environment.IsEnvironment("GitHubActions"))
+{
+    // CI runner: path temporaneo
+    dbPath = "/tmp/vglog.db";
+}
+else if (builder.Environment.IsProduction())
+{
+    // Azure App Service: path scrivibile
+    dbPath = Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "vglog.db");
+}
+else
+{
+    // Locale
+    dbPath = "vglog.db";
+}
 
 //Registrazione del DbContext
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
@@ -109,12 +124,6 @@ builder.Services.AddScoped(sp =>
 });
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
 
 app.Use(async (context, next) =>
 {
@@ -131,6 +140,15 @@ app.Use(async (context, next) =>
     await next();
 });
 
+if (!builder.Environment.IsEnvironment("GitHubActions"))
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -142,11 +160,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseStaticFiles();
-
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseAntiforgery();
 
 
