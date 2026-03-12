@@ -34,4 +34,10 @@
     <None Include="wwwroot\css\Login.css" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Content Include="Data\app.db">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 </Project>
