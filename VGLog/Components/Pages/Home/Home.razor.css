@@ -295,7 +295,6 @@
     color: #6b6b85;
 }
 
-/* ── CHART OVERRIDES ──────────────────────── */
 .h-section .rz-chart {
     height: 260px !important;
 }
@@ -310,7 +309,6 @@
     font-size: 12px !important;
 }
 
-/* ── GUEST SCREEN ─────────────────────────── */
 .h-guest {
     display: flex;
     flex-direction: column;

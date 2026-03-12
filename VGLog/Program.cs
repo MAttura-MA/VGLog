@@ -12,6 +12,7 @@ using VGLog.Components;
 using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+var registerCode = builder.Configuration["RegisterCode"];
 
 
 builder.Services.AddControllersWithViews(options =>
@@ -80,7 +81,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
 
-    // sicurezza cookie
+    // opzioni dei cookie
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
@@ -107,6 +108,21 @@ builder.Services.AddScoped(sp =>
 });
 
 var app = builder.Build();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/register") ||
+        context.Request.Path.StartsWithSegments("/Account/Register"))
+    {
+        var code = context.Request.Query["code"];
+        if (code != registerCode)
+        {
+            context.Response.Redirect("/");
+            return;
+        }
+    }
+    await next();
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
