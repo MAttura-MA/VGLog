@@ -95,10 +95,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 var dbPath = builder.Environment.IsProduction()
-    ? "/home/vglog.db"
+    ? Path.Combine(Environment.GetEnvironmentVariable("HOME"), "site", "wwwroot", "vglog.db")
     : "vglog.db";
+
 //Registrazione del DbContext
-builder.Services.AddDbContext <AppDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddScoped(sp =>
