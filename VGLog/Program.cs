@@ -95,7 +95,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 var dbPath = builder.Environment.IsProduction()
-    ? Path.Combine(Environment.GetEnvironmentVariable("HOME"), "site", "wwwroot", "vglog.db")
+    ? Path.Combine(Environment.GetEnvironmentVariable("HOME"), "vglog.db")
     : "vglog.db";
 
 //Registrazione del DbContext
@@ -109,6 +109,12 @@ builder.Services.AddScoped(sp =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 app.Use(async (context, next) =>
 {
@@ -160,9 +166,5 @@ app.MapRazorPages();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 //app.MapBlazorHub();
 //app.MapRazorPages();
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+
 app.Run();
