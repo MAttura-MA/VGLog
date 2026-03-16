@@ -1,15 +1,16 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Radzen;
+using System.Threading.RateLimiting;
+using VGLog.Components;
 using VGLog.Data;
 using VGLog.Models;
 using VGLog.Services;
 using VGLog.Services.Interfaces;
-using Radzen;
-using VGLog.Components;
-using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 var registerCode = builder.Configuration["RegisterCode"];
@@ -62,6 +63,7 @@ builder.Services.AddScoped<ContextMenuService>();
 // - registra SignInManager (responsabile di creare ClaimsPrincipal e invocare IAuthenticationService per la cookie)
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
+    // requisiti della password
     options.Password.RequireDigit = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -123,6 +125,32 @@ builder.Services.AddScoped(sp =>
     return new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
 });
 
+
+// aggiunto ratelimiter per limitare a 10 le richieste http degli utenti in un determinato intervallo di tempo (in questo caso 10 minuti), preso da documentazione MS
+builder.Services.AddRateLimiter(options =>
+{
+    // GlobalLimiter serve per TUTTE le richieste HTTP dell'app, indipendentemente dall'endpoint.
+    // PartitionedRateLimiter inserisce un "contatore" per ogni client. HttpContext: la fonte dei dati (la richiesta HTTP corrente) string: il tipo della chiave di partizione (l'id del client)
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    // GetFixedWindowLimiter usa una "finestra temporale fissa"
+        RateLimitPartition.GetFixedWindowLimiter(
+            // variabile per l'id del client che prova ad usarlo; si tenta, in ordine: username utente autenticato, ip diretto della connessione, come fallback "unknown"
+            partitionKey: httpContext.User.Identity?.Name
+            ?? httpContext.Connection.RemoteIpAddress?.ToString()
+            ?? "unknown",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                // numero richieste permesse
+                PermitLimit = 10,
+                // coda delle richieste in caso esse abbiano superato il limite (in questo caso non c'è coda)
+                QueueLimit = 0,
+                //tempo di azzeramento della finestra temprale
+                Window = TimeSpan.FromMinutes(1)
+            }));
+});
+
+
 var app = builder.Build();
 
 app.Use(async (context, next) =>
@@ -164,12 +192,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-
-// routing deve essere registrato prima della auth endpoint mapping
-
-// authentication deve venire prima di authorization
-
-
+// aggiunto middleware del ratelimited dichiarato sopra
+app.UseRateLimiter();
 app.MapControllers();
 
 app.MapControllerRoute(

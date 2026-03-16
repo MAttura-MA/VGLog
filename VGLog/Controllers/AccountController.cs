@@ -28,8 +28,8 @@ namespace VGLog.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            //if (ModelState.IsValid)
-            //    return View(model);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             try
             {
@@ -41,7 +41,7 @@ namespace VGLog.Controllers
                     foreach (var error in result.Errors)
                         ModelState.AddModelError("", error.Description);
 
-                    return BadRequest(model);
+                    return BadRequest(result.Errors.Select( e => e.Description));
                 }
 
                 return RedirectToAction("Login");

@@ -7,36 +7,40 @@
 @using VGLog.Models
 @using VGLog.Models.ViewModels
 @using VGLog.Services.Interfaces
+@using Microsoft.AspNetCore.RateLimiting
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IAccountService AccountService
+@inject NotificationService NotificationService
 
 
 <h3>Register</h3>
 
-<EditForm Model="@model" OnValidSubmit="HandleRegister" FormName="RegisterForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<RadzenTemplateForm TItem="RegisterViewModel" Data="model" Submit="HandleRegister" FormName="RegisterForm">
 
     <div>
         <label for="email" class="form-label">Email</label>
-        <InputText @bind-Value="model.Email" class="form-control input-text" id="Email" />
+        <RadzenTextArea @bind-Value="model.Email" class="form-control input-text" id="Email" Name="Email" />
+            <RadzenRequiredValidator Component="Email" Text="Email is required" />
     </div>
 
     <div>
         <label for="DisplayName" class="form-label">Display name</label>
-        <InputText @bind-Value="model.DisplayName" class="form-control input-text" id="DisplayName" />
+        <RadzenTextArea @bind-Value="model.DisplayName" class="form-control input-text" id="DisplayName" Name="DisplayName" Style="height: 1rem" />
+        <RadzenRequiredValidator Component="DisplayName" Text="Display name is required" />
     </div>
 
     <div>
         <label for="Password" class="form-label">Password</label>
-        <InputText type="password" @bind-Value="model.Password" class="form-control input-text" id="Password" />
+        <RadzenPassword type="password" @bind-Value="model.Password" class="form-control input-text" id="Password" Name="Password" />
+        <RadzenRequiredValidator Component="Password" Text="Password is required" />
     </div>
 
     <div>
         <label for="ConfirmPassword" class="form-label">Confirm password</label>
-        <InputText type="password" @bind-Value="model.ConfirmPassword" class="form-control input-text" id="ConfirmPassword" />
+        <RadzenPassword type="password" @bind-Value="model.ConfirmPassword" class="form-control input-text" id="ConfirmPassword" Name="ConfirmPassword" />
+        <RadzenRequiredValidator Component="ConfirmPassword" Text=" Confirm password is required" />
     </div>
 
     <div style="display:flex; gap: 16px; margin-top:12px; align-items: center">
@@ -54,7 +58,7 @@
 
     </div>
 
-</EditForm>
+</RadzenTemplateForm>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -70,15 +74,36 @@
 
     private async Task HandleRegister()
     {
-        var response = await AccountService.RegisterAsync(model);
+        try
+        {
 
-        if (response.Succeeded)
-        {
-            Navigation.NavigateTo("/account/login", true);
+            if (model.Password == null)
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error: ", "Password cannot be null.");
+                return;
+            }
+
+            if (model.Password != model.ConfirmPassword)
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error: ", "Passwords do not match.");
+                return;
+            }
+
+            var response = await AccountService.RegisterAsync(model);
+
+            if (response.Succeeded)
+            {
+                Navigation.NavigateTo("/account/login", true);
+            }
+            else
+            {
+                errorMessage = string.Join(", ", response.Errors.Select(e => e.Description));
+            }
         }
-        else
+        catch
         {
-            errorMessage = "User registration failed.";
+            NotificationService.Notify(NotificationSeverity.Error, "Error: ", "Registration failed. Try again later.");
+                return;
         }
     }
 }

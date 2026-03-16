@@ -6,17 +6,17 @@ namespace VGLog.Models.ViewModels
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [Required]
         [Display(Name ="Nome visualizzato")]
         public string? DisplayName {  get; set; }
 
         [Required, DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [Required, DataType(DataType.Password)]
         [Compare("Password")]
-        public string ConfirmPassword {  get; set; }
+        public string? ConfirmPassword {  get; set; }
     }
 }
