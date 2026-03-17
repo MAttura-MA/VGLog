@@ -48,31 +48,50 @@ namespace VGLog.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while creating an offer for User {UserId}.", User?.Identity?.Name ?? "Unknown");
                 ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again later.");
                 return StatusCode(500);
             }
         }
 
-        [HttpPost("login")]
+
+        [HttpPost("/auth/login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        [ValidateAntiForgeryToken]
+
+        public async Task<IActionResult> LoginRedirect([FromForm] LoginViewModel model, string? returnUrl = null)
         {
-            try
-            {
-                var result = await _accountService.LoginAsync(model);
 
-                if (result.Succeeded)
-                    return Ok(new { success = true });
+            if (!ModelState.IsValid)
+                return Redirect("/account/login");
 
-                return Unauthorized(new { success = false, message = "Invalid credentials" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Login failed");
-                return StatusCode(500, new { success = false, message = "Server error" });
-            }
+            var result = await _accountService.LoginAsync(model);
+
+            if (result.Succeeded)
+                return LocalRedirect(returnUrl ?? "/");
+
+            return Redirect($"/account/login");
+
         }
+
+        //[HttpPost("login")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> Login(LoginViewModel model)
+        //{
+        //    try
+        //    {
+        //        var result = await _accountService.LoginAsync(model);
+
+        //        if (result.Succeeded)
+        //            return Ok(new { success = true });
+
+        //        return Unauthorized(new { success = false, message = "Invalid credentials" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Login failed");
+        //        return StatusCode(500, new { success = false, message = "Server error" });
+        //    }
+        //}
 
         [Authorize]
         [HttpPost("/auth/logout")]

@@ -2,108 +2,122 @@
 
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
 @using Radzen
 @using Radzen.Blazor
 @using VGLog.Models
 @using VGLog.Models.ViewModels
 @using VGLog.Services.Interfaces
-@using Microsoft.AspNetCore.RateLimiting
 
-@inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IAccountService AccountService
 @inject NotificationService NotificationService
 
+<PageTitle>VGLog - Register</PageTitle>
 
-<h3>Register</h3>
+<link rel="stylesheet" href="/app.css" />
+<link rel="stylesheet" href="/css/login.css" />
 
-<RadzenTemplateForm TItem="RegisterViewModel" Data="model" Submit="HandleRegister" FormName="RegisterForm">
+<div class="page-container">
 
-    <div>
-        <label for="email" class="form-label">Email</label>
-        <RadzenTextArea @bind-Value="model.Email" class="form-control input-text" id="Email" Name="Email" />
-            <RadzenRequiredValidator Component="Email" Text="Email is required" />
+    <h1 class="page-title">Register</h1>
+
+    <div class="form-container">
+        <RadzenTemplateForm TItem="RegisterViewModel"
+                            Data="model"
+                            Submit="HandleRegister">
+
+            <div class="form-group">
+                <RadzenLabel Text="Email" Component="Email" />
+                <RadzenTextBox @bind-Value="model.Email"
+                               Name="Email"
+                               Placeholder="Email"
+                               class="form-input"
+                               Style="width:100%" />
+                <RadzenRequiredValidator Component="Email"
+                                         Text="Email is required"
+                                         Style="color:#fc5c7d; font-size:0.8rem" />
+                <RadzenEmailValidator Component="Email" Text="Email is not valid"/>
+            </div>
+
+            <div class="form-group">
+                <RadzenLabel Text="Display name" Component="DisplayName" />
+                <RadzenTextBox @bind-Value="model.DisplayName"
+                               Name="DisplayName"
+                               Placeholder="Display name"
+                               class="form-input"
+                               Style="width:100%" />
+                <RadzenRequiredValidator Component="DisplayName"
+                                         Text="Display name is required"
+                                         Style="color:#fc5c7d; font-size:0.8rem" />
+            </div>
+
+            <div class="form-group">
+                <RadzenLabel Text="Password" Component="Password" />
+                <RadzenPassword @bind-Value="model.Password"
+                                Name="Password"
+                                Placeholder="Password"
+                                class="form-input"
+                                Style="width:100%" />
+                <RadzenRequiredValidator Component="Password"
+                                         Text="Password is required"
+                                         Style="color:#fc5c7d; font-size:0.8rem" />
+            </div>
+
+            <div class="form-group">
+                <RadzenLabel Text="Confirm password" Component="ConfirmPassword" />
+                <RadzenPassword @bind-Value="model.ConfirmPassword"
+                                Name="ConfirmPassword"
+                                Placeholder="Confirm password"
+                                class="form-input"
+                                Style="width:100%" />
+                <RadzenRequiredValidator Component="ConfirmPassword"
+                                         Text="Confirm password is required"
+                                         Style="color:#fc5c7d; font-size:0.8rem" />
+            </div>
+
+            <div class="form-actions">
+                <RadzenButton ButtonType="ButtonType.Submit"
+                              Text="Register"
+                              Icon="person_add"
+                              class="btn-primary" />
+                <NavLink href="/account/login" class="btn-outline">
+                    <span class="material-icons">login</span>
+                    Login
+                </NavLink>
+            </div>
+
+        </RadzenTemplateForm>
     </div>
 
-    <div>
-        <label for="DisplayName" class="form-label">Display name</label>
-        <RadzenTextArea @bind-Value="model.DisplayName" class="form-control input-text" id="DisplayName" Name="DisplayName" Style="height: 1rem" />
-        <RadzenRequiredValidator Component="DisplayName" Text="Display name is required" />
-    </div>
-
-    <div>
-        <label for="Password" class="form-label">Password</label>
-        <RadzenPassword type="password" @bind-Value="model.Password" class="form-control input-text" id="Password" Name="Password" />
-        <RadzenRequiredValidator Component="Password" Text="Password is required" />
-    </div>
-
-    <div>
-        <label for="ConfirmPassword" class="form-label">Confirm password</label>
-        <RadzenPassword type="password" @bind-Value="model.ConfirmPassword" class="form-control input-text" id="ConfirmPassword" Name="ConfirmPassword" />
-        <RadzenRequiredValidator Component="ConfirmPassword" Text=" Confirm password is required" />
-    </div>
-
-    <div style="display:flex; gap: 16px; margin-top:12px; align-items: center">
-
-        <RadzenButton ButtonType="ButtonType.Submit"
-                      Text="Register"
-                      Icon="person_add"
-                      Style="background:#7c5cfc; border:none; padding: 0.6rem 1.5rem; border-radius: 8px; height:38px;" />
-
-        <NavLink href="/account/login"
-                 style="background:transparent; border: 1px solid #7c5cfc; color:#7c5cfc; padding: 0.6rem 1.5rem; border-radius: 8px; height:38px; box-sizing:border-box; text-decoration:none; display:inline-flex; align-items:center; gap:4px; font-size:0.875rem; font-weight:500;">
-            <RadzenIcon Icon="login" />
-            Login
-        </NavLink>
-
-    </div>
-
-</RadzenTemplateForm>
-
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger mt-3">@errorMessage</div>
-}
+</div>
 
 @code {
-
-    [SupplyParameterFromForm]
-    private RegisterViewModel model { get; set; } = new RegisterViewModel();
-
+    private RegisterViewModel model { get; set; } = new();
     private string errorMessage = "";
 
     private async Task HandleRegister()
     {
+        errorMessage = "";
+
+        if (model.Password != model.ConfirmPassword)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Passwords do not match.");
+            return;
+        }
+
         try
         {
-
-            if (model.Password == null)
-            {
-                NotificationService.Notify(NotificationSeverity.Error, "Error: ", "Password cannot be null.");
-                return;
-            }
-
-            if (model.Password != model.ConfirmPassword)
-            {
-                NotificationService.Notify(NotificationSeverity.Error, "Error: ", "Passwords do not match.");
-                return;
-            }
-
             var response = await AccountService.RegisterAsync(model);
 
             if (response.Succeeded)
-            {
-                Navigation.NavigateTo("/account/login", true);
-            }
+                Navigation.NavigateTo("/account/login");
             else
-            {
                 errorMessage = string.Join(", ", response.Errors.Select(e => e.Description));
-            }
         }
         catch
         {
-            NotificationService.Notify(NotificationSeverity.Error, "Error: ", "Registration failed. Try again later.");
-                return;
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Registration failed. Try again later.");
         }
     }
 }

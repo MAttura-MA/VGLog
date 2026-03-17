@@ -13,8 +13,6 @@ using VGLog.Services;
 using VGLog.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-var registerCode = builder.Configuration["RegisterCode"];
-
 
 builder.Services.AddControllersWithViews(options =>
 {
@@ -34,7 +32,7 @@ builder.Services.AddRadzenComponents();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery();
-builder.Services.AddHttpClient();
+//builder.Services.AddHttpClient();
 
 
 //Registrazione dei services
@@ -98,26 +96,26 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 string dbPath;
 
-if (builder.Environment.IsEnvironment("GitHubActions"))
-{
-    // CI runner: path temporaneo
-    dbPath = "/tmp/vglog.db";
-}
-else if (builder.Environment.IsProduction())
-{
-    // Azure App Service: path scrivibile
-    dbPath = Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "vglog.db");
-}
-else
-{
-    // Locale
-    dbPath = "vglog.db";
-}
+//if (builder.Environment.IsEnvironment("GitHubActions"))
+//{
+//    // CI runner: path temporaneo
+//    dbPath = "/tmp/vglog.db";
+//}
+//else if (builder.Environment.IsProduction())
+//{
+//    // Azure App Service: path scrivibile
+//    dbPath = Path.Combine(Environment.GetEnvironmentVariable("HOME")!, "vglog.db");
+//}
+//else
+//{
+//    // Locale
+//    dbPath = "vglog.db";
+//}
 
 //Registrazione del DbContext
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseSqlite(connectionString: $"Data Source=VGLog.db;Cache=Shared"));
 
 builder.Services.AddScoped(sp =>
 {
@@ -132,50 +130,57 @@ builder.Services.AddRateLimiter(options =>
     // GlobalLimiter serve per TUTTE le richieste HTTP dell'app, indipendentemente dall'endpoint.
     // PartitionedRateLimiter inserisce un "contatore" per ogni client. HttpContext: la fonte dei dati (la richiesta HTTP corrente) string: il tipo della chiave di partizione (l'id del client)
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-    // GetFixedWindowLimiter usa una "finestra temporale fissa"
-        RateLimitPartition.GetFixedWindowLimiter(
-            // variabile per l'id del client che prova ad usarlo; si tenta, in ordine: username utente autenticato, ip diretto della connessione, come fallback "unknown"
-            partitionKey: httpContext.User.Identity?.Name
-            ?? httpContext.Connection.RemoteIpAddress?.ToString()
-            ?? "unknown",
-            factory: partition => new FixedWindowRateLimiterOptions
-            {
-                AutoReplenishment = true,
-                // numero richieste permesse
-                PermitLimit = 10,
-                // coda delle richieste in caso esse abbiano superato il limite (in questo caso non c'è coda)
-                QueueLimit = 0,
-                //tempo di azzeramento della finestra temprale
-                Window = TimeSpan.FromMinutes(1)
-            }));
-});
+    {
+        // visto che anche le richieste per i file statici (come il css) vengono contate verso il rate limiter, vengono ignorate
+        var path = httpContext.Request.Path.Value ?? "";
 
+        if (path.StartsWith("/_blazor") ||
+            path.StartsWith("/_framework") ||
+            path.StartsWith("/css") ||
+            path.EndsWith(".css") ||
+            path.EndsWith(".js") ||
+            path.EndsWith(".woff2") ||
+            path.StartsWith("/js") ||
+            path.StartsWith("/_vs"))
+        {
+            return RateLimitPartition.GetNoLimiter<string>("static");
+        }
+        // modo per trovare cosa conta verso il ratelimiter
+        // Console.WriteLine($"[RateLimit] Path: {path} | Client: {httpContext.User.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}");
+       
+        // GetFixedWindowLimiter usa una "finestra temporale" fissa
+        return RateLimitPartition.GetFixedWindowLimiter(
+                // variabile per l'id del client che prova ad usarlo; si tenta, in ordine: username utente autenticato, ip diretto della connessione, come fallback "unknown"
+                partitionKey: httpContext.User.Identity?.Name
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "unknown",
+                factory: partition =>
+                {
+                    return new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        // numero richieste permesse (messo a 100 per evitare di venir bloccato in debug)
+                        PermitLimit = 100,
+                        // coda delle richieste in caso esse abbiano superato il limite (in questo caso non c'è coda)
+                        QueueLimit = 0,
+                        //tempo di azzeramento della finestra temprale
+                        Window = TimeSpan.FromMinutes(1)
+                    };
+                });
+
+    });
+});
 
 var app = builder.Build();
 
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/register") ||
-        context.Request.Path.StartsWithSegments("/Account/Register"))
-    {
-        var code = context.Request.Query["code"];
-        if (code != registerCode)
-        {
-            context.Response.Redirect("/");
-            return;
-        }
-    }
-    await next();
-});
-
-if (!builder.Environment.IsEnvironment("GitHubActions"))
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.Migrate();
-    }
-}
+//if (!builder.Environment.IsEnvironment("GitHubActions"))
+//{
+//    using (var scope = app.Services.CreateScope())
+//    {
+//        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//        db.Database.Migrate();
+//    }
+//}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -186,6 +191,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseRouting();
 app.UseStaticFiles();
 app.UseAuthentication();
@@ -193,7 +199,6 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 // aggiunto middleware del ratelimited dichiarato sopra
-app.UseRateLimiter();
 app.MapControllers();
 
 app.MapControllerRoute(
