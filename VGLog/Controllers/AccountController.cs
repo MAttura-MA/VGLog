@@ -49,55 +49,6 @@ namespace VGLog.Controllers
             }
         }
 
-
-        //[HttpPost("/auth/login")]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-
-        //public async Task<IActionResult> LoginRedirect([FromForm] LoginViewModel model, string? returnUrl = null)
-        //{
-        //    var emailError = ModelState["Email"]?.Errors.FirstOrDefault()?.ErrorMessage;
-
-        //    if (emailError != null)
-        //    {
-        //        return Redirect($"/account/login?error=invalidemail&returnUrl={returnUrl}");
-        //    }
-
-        //    if (!ModelState.IsValid)
-        //        return Redirect("/account/login");
-
-
-
-
-        //    var result = await _accountService.LoginAsync(model);
-
-        //    if (result.Succeeded)
-        //        return LocalRedirect(returnUrl ?? "/");
-
-        //    return Redirect($"/account/login");
-
-        //}
-
-        //[HttpPost("login")]
-        //[AllowAnonymous]
-        //public async Task<IActionResult> Login(LoginViewModel model)
-        //{
-        //    try
-        //    {
-        //        var result = await _accountService.LoginAsync(model);
-
-        //        if (result.Succeeded)
-        //            return Ok(new { success = true });
-
-        //        return Unauthorized(new { success = false, message = "Invalid credentials" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Login failed");
-        //        return StatusCode(500, new { success = false, message = "Server error" });
-        //    }
-        //}
-
         [Authorize]
         [HttpPost("/auth/logout")]
         [ValidateAntiForgeryToken]
