@@ -83,15 +83,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 
     // opzioni dei cookie
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.None
+        : CookieSecurePolicy.Always; options.Cookie.SameSite = SameSiteMode.Lax;
     options.ExpireTimeSpan = TimeSpan.FromDays(14);
     options.SlidingExpiration = true;
-
-    options.Events = new CookieAuthenticationEvents
-    {
-
-    };
 });
 
 string dbPath;
@@ -115,7 +111,7 @@ string dbPath;
 //Registrazione del DbContext
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString: $"Data Source=VGLog.db;Cache=Shared"));
+    options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddScoped(sp =>
 {

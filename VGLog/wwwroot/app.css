@@ -306,3 +306,13 @@ body {
     --bs-border-color: #15151e;
     color: white;
 }
+
+.rz-spinner input.rz-inputtext {
+    color: white !important;
+    background-color: #1a1a2e !important;
+}
+
+.rz-numeric input[type="number"],
+.rz-numeric input[type="text"] {
+    color: white !important;
+}

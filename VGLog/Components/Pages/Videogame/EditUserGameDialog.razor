@@ -10,7 +10,7 @@
 
 
 <RadzenTemplateForm TItem="UpdateUserGameDto" data="@EditDto" Submit="@OnSubmit">
-    <div style="display:flex; flex-direction:column; gap:16px; padding:8px 0;">
+    <div style="dialog-form">
 
         <div>
             <RadzenLabel Text="Game Status" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;" />
@@ -19,7 +19,7 @@
                             Placeholder="Game Status"
                             TextProperty="Value"
                             ValueProperty="Key"
-                            Style="width:100%; margin-top:4px;" />
+                            Style="width:100%; margin-top:4px; background-color:#1a1a2e; color:white !important;" />
         </div>
 
     </div>
@@ -27,22 +27,26 @@
     <div>
         <RadzenLabel Text="Hours Played" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;" />
         <RadzenNumeric @bind-Value="EditDto.HoursPlayed"
-                       Style="width:100%; margin-top:4px;" />
+                       Style="width:100%; margin-top:4px; background-color:#1a1a2e;" />
     </div>
 
-    <div>
-        <RadzenLabel Text="Notes" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;"/>
-        <RadzenTextArea @bind-Value="EditDto.Notes" Rows="3"
-                   Style="width:100%; margin-top:4px; resize:none;" />
-    </div>
 
-    <div>
-        <RadzenLabel Text="Rating" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;" />
-        <RadzenRating Value="@(EditDto.PersonalRating ?? 0)"
-                      ValueChanged="@(v => EditDto.PersonalRating = v)"
-                      Stars="10"
-                      Style="margin-top:4px; width:100%" />
-    </div>
+    @if (EditDto.GameStatus != GameStatus.Toplay)
+    {
+        <div>
+            <RadzenLabel Text="Notes" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;"/>
+            <RadzenTextArea @bind-Value="EditDto.Notes" Rows="3"
+                            Style="width:100%; margin-top:4px; resize:none; background-color:#1a1a2e; " />
+        </div>
+        
+        <div>
+            <RadzenLabel Text="Rating" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;" />
+            <RadzenRating Value="@(EditDto.PersonalRating ?? 0)"
+                          ValueChanged="@(v => EditDto.PersonalRating = v)"
+                          Stars="10"
+                          Style="margin-top:4px; width:100%" />
+        </div>
+    }
 
 
 

@@ -77,15 +77,21 @@
     
     <div class="h-bottom-grid">
 
-        @if (ChartData.Any())
-        {
-            <div class="h-section">
-                <div class="h-section-header">
-                    <div class="h-section-title">
-                        <div class="h-section-dot" style="background:#7c5cfc"></div>
-                        Games Overview
-                    </div>
+        <div class="h-section">
+            <div class="h-section-header">
+                <div class="h-section-title">
+                    <div class="h-section-dot" style="background:#7c5cfc"></div>
+                    Games Overview
                 </div>
+            </div>
+            @if (!ChartData.Any())
+            {
+                <div style="color:#6b6b85; font-size:14px; padding:16px 0; text-align:center;">
+                    No games added yet.
+                </div>
+            }
+            else
+            {
                 <RadzenChart>
                     <RadzenLegend Position="LegendPosition.Right" />
                     <RadzenPieSeries Data="@ChartData"
@@ -96,8 +102,9 @@
                         <RadzenSeriesDataLabels Visible="true" />
                     </RadzenPieSeries>
                 </RadzenChart>
-            </div>
-        }
+            
+            }
+        </div>
 
         <div class="h-section">
             <div class="h-section-header">
@@ -171,7 +178,7 @@ else
         <a href="/about">About</a>
     </div>
  
-        @* <NavLink href="/account/login"
+    @* <NavLink href="/account/login"
                  style="background:#7c5cfc; border:none; padding: 0.6rem 1.5rem; border-radius: 8px; height:38px; box-sizing:border-box; text-decoration:none; display:inline-flex; align-items:center; gap:4px; color:white; font-size:0.875rem; font-weight:500;">
             <RadzenIcon Icon="login" />
             Login
@@ -224,7 +231,7 @@ else
                         new PieChartItems { Status = "Dropped", Value = ProfileData.Dropped}
                     }
                     .Where(x => x.Value > 0)
-                    .ToList(); 
+                    .ToList();
                 }
             }
         }

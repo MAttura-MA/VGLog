@@ -153,6 +153,11 @@
                     <span style="font-size:0.85rem">@ProfileData?.MostPlayedGame?.HoursPlayed hours</span>
 
                 }
+                else
+                {
+                    <span style="font-size:0.85rem">— </span>
+
+                }
             </div>
         </div>
     </div>
@@ -165,6 +170,11 @@
             @if (ProfileData?.MostRecentlyCompletedGame?.Videogame?.Image != null)
             {
                 <img src="data:image/jpeg;base64,@Convert.ToBase64String(ProfileData.MostRecentlyCompletedGame.Videogame.Image)" style="width:55px; height:75px; object-fit:cover; border-radius:6px;" />
+            }
+            else
+            {
+                <span style="font-size:0.85rem">— </span>
+
             }
             <div style="display:flex; flex-direction:column; gap:0.2rem;">
                 <span style="font-size:1rem; font-weight:700;">@ProfileData?.MostRecentlyCompletedGame?.Videogame.Title</span>

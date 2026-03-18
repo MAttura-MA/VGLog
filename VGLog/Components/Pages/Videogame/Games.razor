@@ -47,7 +47,7 @@
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 Placeholder="Search for a game..."
                                 Change="@OnGameSelected"
-                                Style="width:100%" />
+                                Style="width:100%; background-color:#1a1a2e; color: white;" />
 
 
             </div>
@@ -61,7 +61,7 @@
                     Placeholder="Game Status"
                     TextProperty="Value"
                     ValueProperty="Key"
-                    Style="width:100%" />
+                    Style="width:100%; background-color:#1a1a2e; color: white;" />
                 </div>
 
                 <div class="field">
@@ -69,7 +69,7 @@
                     <RadzenNumeric @bind-Value="@HoursPlayed"
                     Placeholder="0"
                     min="0"
-                    Style="width:100%" />
+                                   Style="width:100%; background-color:#1a1a2e;" />
 
                 </div>
 
@@ -102,7 +102,7 @@
                     <RadzenTextArea @bind-Value="@SelectedNotes"
                                     Placeholder="Your thoughts..."
                                     Rows="5"
-                                    Style="width:100%; flex:1; resize:none;" />
+                                    Style="width:100%; flex:1; resize:none; color: white; background-color:#1a1a2e; " />
 
                 </div>
 
@@ -127,17 +127,17 @@
                 AllowPaging="true"
                 PageSize="15"
                 AllowColumnResize="true"
-                ColumnResizeMode="DataGridColumnResizeMode.Fit"
-                Style="width:100%"
+                ColumnResizeMode="DataGridColumnResizeMode.Simple"
+                Style="width:100%; overflow-x:auto;"
                 EmptyText="No games yet — add your first one above!">
 
     <Columns>
 
-        <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Game" Width="150px" MinWidth="120px" />
+        <RadzenDataGridColumn TItem="UserGame" Property="Videogame.Title" Title="Game" Width="150px" MinWidth="120px" MaxWidth="300px" />
 
-        <RadzenDataGridColumn TItem="UserGame" Property="GameStatus" Title="Game Status" Width="140px" MinWidth="120px" />
+        <RadzenDataGridColumn TItem="UserGame" Property="GameStatus" Title="Game Status" Width="140px" MinWidth="120px" MaxWidth="250px" />
 
-        <RadzenDataGridColumn TItem="UserGame" Property="PersonalRating" Title="Rating" Width="130px" MinWidth="120px">
+        <RadzenDataGridColumn TItem="UserGame" Property="PersonalRating" Title="Rating" Width="130px" MinWidth="120px" MaxWidth="200px">
             <Template Context="item">
                 @if (item.PersonalRating.HasValue && item.PersonalRating > 0)
                 {
@@ -155,7 +155,7 @@
             </Template>
         </RadzenDataGridColumn>
 
-        <RadzenDataGridColumn TItem="UserGame" Property="HoursPlayed" Title="Hours played" Width="110px" MinWidth="120px">
+        <RadzenDataGridColumn TItem="UserGame" Property="HoursPlayed" Title="Hours played" Width="110px" MinWidth="120px" MaxWidth="200px">
             <Template Context="item">
                 @if (item.HoursPlayed.HasValue && item.HoursPlayed > 0)
                 {
@@ -167,11 +167,15 @@
             </Template>
         </RadzenDataGridColumn>
 
-        <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" Sortable="false" Width="140px" MinWidth="120px">
+        <RadzenDataGridColumn TItem="UserGame" Property="Notes" Title="Notes" Sortable="false" Width="140px" MinWidth="120px" MaxWidth="300px">
             <Template Context="item">
                 @if (!string.IsNullOrWhiteSpace(item.Notes))
                 {
-                    <span title="@item.Notes">@item.Notes</span>
+                    <RadzenTooltip />
+                    <span style="cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; max-width:130px;"
+                          title="@item.Notes">
+                        @item.Notes
+                    </span>
                 }
                 else
                 {
@@ -184,6 +188,8 @@
                               Title="Actions"
                               Sortable="false"
                               Width="130px"
+                              MinWidth="130px"
+                              MaxWidth="130px"
                               Frozen="true"
                               FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="item">
@@ -327,7 +333,7 @@
                 Draggable = false,
                 Width = "450px",
                 Height = "auto",
-                Style = "position: fixed; top: 50%; transform: translate(-50%, -50%);"
+                CloseDialogOnOverlayClick = false
             });
 
         if (result == true)

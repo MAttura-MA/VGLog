@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using VGLog.Models.ViewModels;
-using VGLog.Services;
 using VGLog.Services.Interfaces;
 
 namespace VGLog.Controllers
@@ -54,24 +50,33 @@ namespace VGLog.Controllers
         }
 
 
-        [HttpPost("/auth/login")]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        //[HttpPost("/auth/login")]
+        //[AllowAnonymous]
+        //[ValidateAntiForgeryToken]
 
-        public async Task<IActionResult> LoginRedirect([FromForm] LoginViewModel model, string? returnUrl = null)
-        {
+        //public async Task<IActionResult> LoginRedirect([FromForm] LoginViewModel model, string? returnUrl = null)
+        //{
+        //    var emailError = ModelState["Email"]?.Errors.FirstOrDefault()?.ErrorMessage;
 
-            if (!ModelState.IsValid)
-                return Redirect("/account/login");
+        //    if (emailError != null)
+        //    {
+        //        return Redirect($"/account/login?error=invalidemail&returnUrl={returnUrl}");
+        //    }
 
-            var result = await _accountService.LoginAsync(model);
+        //    if (!ModelState.IsValid)
+        //        return Redirect("/account/login");
 
-            if (result.Succeeded)
-                return LocalRedirect(returnUrl ?? "/");
 
-            return Redirect($"/account/login");
 
-        }
+
+        //    var result = await _accountService.LoginAsync(model);
+
+        //    if (result.Succeeded)
+        //        return LocalRedirect(returnUrl ?? "/");
+
+        //    return Redirect($"/account/login");
+
+        //}
 
         //[HttpPost("login")]
         //[AllowAnonymous]
