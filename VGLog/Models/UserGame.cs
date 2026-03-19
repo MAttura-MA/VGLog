@@ -19,7 +19,6 @@ namespace VGLog.Models
         public Videogame Videogame { get; set; } = null!;
 
         public int? PersonalRating { get; set; }
-        public bool Completed { get; set; } = false;
         public DateTime? CompletedAt { get; set; }
         public string? Notes { get; set; }
 

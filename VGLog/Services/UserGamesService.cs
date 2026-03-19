@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Net.WebSockets;
 using System.Security.Claims;
 using VGLog.Data;
 using VGLog.Models;
@@ -19,27 +19,19 @@ namespace VGLog.Services
             _userManager = userManager;
         }
 
-        public async Task<UserGame> AddGameToUserAsync(int videogameId, int? personalRating, string? notes, ClaimsPrincipal user, GameStatus PlayedOrNot, int? HoursPlayed)
+        public async Task<UserGame> AddGameToUserAsync(int videogameId, int? personalRating, string? notes, string paramUserId, GameStatus PlayedOrNot, int? HoursPlayed)
         {
-            var userId = _userManager.GetUserId(user);
-
             var gameExists = await _context.Videogames
                 .FirstOrDefaultAsync(g => g.Id == videogameId);
 
             if (gameExists != null)
             {
-                var alreadyAdded = await _context.UserGames
-                    .AnyAsync(ug => ug.UserId == userId && ug.VideogameId == videogameId);
-
-                if (alreadyAdded)
-                    throw new Exception("This game is already in your profile");
 
                 var userGame = new UserGame
                 {
-                    UserId = userId,
+                    UserId = paramUserId,
                     VideogameId = videogameId,
                     PersonalRating = personalRating,
-                    Completed = personalRating.HasValue,
                     CompletedAt = PlayedOrNot == GameStatus.Completed ? DateTime.Now : null,
                     GameStatus = PlayedOrNot,
                     HoursPlayed = HoursPlayed,
@@ -66,7 +58,7 @@ namespace VGLog.Services
             if (!userGames.Any())
                 return new GetUserGamesDto();
 
-            //calcoli semplici
+            //counter semplici
             var completedGames = userGames.Count(x => x.GameStatus == GameStatus.Completed);
             var playingGames = userGames.Count(x => x.GameStatus == GameStatus.Playing);
             var toPlayGames = userGames.Count(x => x.GameStatus == GameStatus.Toplay);
@@ -112,12 +104,14 @@ namespace VGLog.Services
                 .FirstOrDefaultAsync(u => u.Id == dto.Id);
 
             if (userGame == null)
-                return;
+                throw new KeyNotFoundException($"Videogame not found."); ;
 
             userGame.HoursPlayed = dto.HoursPlayed;
             userGame.Notes = dto.Notes;
             userGame.PersonalRating = dto.PersonalRating;
             userGame.GameStatus = dto.GameStatus;
+            userGame.CompletedAt = dto.GameStatus == GameStatus.Completed ? (userGame.CompletedAt ?? DateTime.Now) : null;
+
 
             await _context.SaveChangesAsync();
         }
@@ -130,14 +124,15 @@ namespace VGLog.Services
             if (userGame == null) return;
 
             userGame.GameStatus = newStatus;
+            userGame.CompletedAt = newStatus == GameStatus.Completed ? (userGame.CompletedAt ?? DateTime.Now) : null;
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task<UserGame?> DeleteUserGameAsync(int GameId, string userId)
+        public async Task<UserGame?> DeleteUserGameAsync(int GameId, string paramUserId)
         {
             var entity = await _context.UserGames
-                .Where(u => u.UserId == userId && u.Id == GameId)
+                .Where(u => u.UserId == paramUserId && u.Id == GameId)
                 .FirstOrDefaultAsync();
 
             if (entity != null)
@@ -191,16 +186,6 @@ namespace VGLog.Services
                 .FirstOrDefaultAsync();
 
             return result;
-        }
-
-        public double GetCompletionRate(int completed, int total, string paramUserId)
-        {
-            // Evita divisione per zero
-            if (total == 0)
-                return 0;
-
-            // Calcola percentuale e arrotonda a 1 decimale
-            return Math.Round((double)completed / total * 100, 1);
         }
 
         public string GetDisplayName (ClaimsPrincipal user, string paramUserId)

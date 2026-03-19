@@ -1,11 +1,25 @@
-﻿@rendermode InteractiveServer
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@rendermode InteractiveServer
 @inject NavigationManager Navigation
 
-<div class="topbar-user" @onclick="ToggleDropdown">
-    <div class="topbar-avatar">@(DisplayName?[0].ToString().ToUpper())</div>
-    <span class="topbar-name">@DisplayName</span>
-    <span class="topbar-chevron @(dropdownOpen ? "open" : "")">▾</span>
-</div>
+
+<div class="top-row px-4">
+            <AuthorizeView>
+                <Authorized>
+            <div class="topbar-user" @onclick="ToggleDropdown">
+                <div class="topbar-avatar">@(DisplayName?[0].ToString().ToUpper())</div>
+                <span class="topbar-name">@DisplayName</span>
+                <span class="topbar-chevron @(dropdownOpen ? "open" : "")">▾</span>
+            </div>
+        </Authorized>
+                <NotAuthorized>
+                    <a class="topbar-auth-link" href="/account/login">Login</a>
+                    <a class="topbar-auth-btn" href="/account/register">Register</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+
 
 @if (dropdownOpen)
 {

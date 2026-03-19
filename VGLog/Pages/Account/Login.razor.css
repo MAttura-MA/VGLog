@@ -1,9 +1,0 @@
-﻿.validation-message {
-    display: none;
-    color: red;
-    font-size: 0.85rem;
-}
-
-.form-input:invalid:not(:placeholder-shown) + .validation-message {
-    display: block;
-}

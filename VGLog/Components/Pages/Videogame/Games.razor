@@ -236,22 +236,28 @@
     private string? SelectedNotes { get; set; }
     private int? HoursPlayed { get; set; }
     private string? userId;
+    private bool isLoggedIn;
+
 
 
     protected override async Task OnInitializedAsync()
     {
         authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
         user = authState.User;
+        isLoggedIn = user.Identity?.IsAuthenticated ?? false;
 
-        userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        displayName = user.Claims
+        if (isLoggedIn)
+        {
+            userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            displayName = user.Claims
                 .FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? user.Identity.Name;
 
-        AvailableGames = await VideogameService.GetAllAsync();
+            AvailableGames = await VideogameService.GetAllAsync();
 
-        await LoadUserGames();
+            await LoadUserGames();
+        }
     }
 
     private async Task LoadUserGames()
@@ -304,7 +310,8 @@
                 return;
             }
 
-            await UserGamesService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, user, PlayedOrNot, HoursPlayed);
+            await UserGamesService.AddGameToUserAsync(SelectedGame.Id, SelectedRating, SelectedNotes, userId, PlayedOrNot, HoursPlayed);
+
             await LoadUserGames();
 
             NotificationService.Notify(NotificationSeverity.Success, "Game added correctly", $"You've added {SelectedGame.Title} to your profile!");

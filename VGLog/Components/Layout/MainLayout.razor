@@ -18,15 +18,15 @@
 
     <main>
         <div class="top-row px-4">
-            @if (isLoggedIn)
-            {
-                <TopBar DisplayName="@displayName" />
-            }
-            else
-            {
-                <a class="topbar-auth-link" href="/account/login">Login</a>
-                <a class="topbar-auth-btn" href="/account/register">Register</a>
-            }
+            <AuthorizeView>
+                <Authorized>
+                    <TopBar DisplayName="@(context.User.Claims.FirstOrDefault(c => c.Type == "DisplayName")?.Value ?? context.User.Identity?.Name)" />
+                </Authorized>
+                <NotAuthorized>
+                    <a class="topbar-auth-link" href="/account/login">Login</a>
+                    <a class="topbar-auth-btn" href="/account/register">Register</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">

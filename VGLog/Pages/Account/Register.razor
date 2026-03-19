@@ -114,7 +114,7 @@
             var response = await AccountService.RegisterAsync(model);
 
             if (response.Succeeded)
-                Navigation.NavigateTo("/account/login");
+                Navigation.NavigateTo("/account/login", true);
             else
                 errorMessage = string.Join(", ", response.Errors.Select(e => e.Description));
         }
