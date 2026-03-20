@@ -216,7 +216,6 @@ html {
     --rz-grid-cell-color: white !important;
 }
 
-/*dialogs stile*/
 
 .rz-dialog {
     background-color: #0f0f18;
@@ -235,7 +234,6 @@ html {
     color: white !important;
 }
 
-/*stile dei dropdowns*/
 
 .rz-dropdown-panel {
     background-color: #1a1a2e !important;

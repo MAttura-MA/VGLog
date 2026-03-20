@@ -29,7 +29,7 @@
             <span>Profile</span>
         </button>
         <hr class="dd-divider" />
-        <form method="post" action="/auth/Logout" style="margin:0">
+        <form method="post" action="api/account/Logout" style="margin:0">
             <AntiforgeryToken />
             <input type="hidden" name="returnUrl" value="/account/login" />
             <button type="submit" class="dd-item dd-logout">

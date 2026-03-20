@@ -6,26 +6,21 @@
 @using Radzen.Blazor
 @using VGLog.Models.ViewModels
 @using Microsoft.AspNetCore.Components.Forms
-@using static System.Net.WebRequestMethods
 
-@inject NavigationManager Navigation
 @inject NotificationService NotificationService
 
-
-
+@*è possibile accedere a questa pagina anche da non autorizzati*@
 @attribute [AllowAnonymous]
 
 <PageTitle>VGLog - Login</PageTitle>
-
-<link rel="stylesheet" href="/app.css" />
-<link rel="stylesheet" href="/css/login.css" />
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
 <div class="page-container">
 
     <h1 class="page-title">Login</h1>
 
+    @*Form html normale con endpoint perche blazor non gestisce correttamente i cookie a differenza di asp.net identity*@
     <form method="post" action="/auth/login" class="form-container" id="loginForm" novalidate>
+        @*generazione di un token antiforgery per proteggere da attacchi CSRF così un attaccante non può far submit del form da un altro sito poiché non ha questo token specifico*@
         <AntiforgeryToken />
 
         @if (!string.IsNullOrEmpty(ReturnUrl))
@@ -74,6 +69,7 @@
     [SupplyParameterFromQuery(Name = "error")]
     private string? Error { get; set; }
 
+    // chiamato dopo che il componente è stato renderizzato perché ho la necessita di aspettare che il DOM (document object model) sia pronto per mostrare le notifiche
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender && !string.IsNullOrEmpty(Error))
@@ -91,7 +87,7 @@
 }
 
 <script>
-
+    //validazione lato UX eseguita prima che il form venga inviato als erver, per far sapere all'utente subito cosa non vada
     document.getElementById("loginForm").addEventListener("submit", function (e) {
 
         const email = document.querySelector("input[name='Email']");
@@ -110,13 +106,14 @@
             valid = false;
         }
 
+        //evita password fatte di soli spazi bianchi
         if (!password.value.trim()) {
             passwordError.style.display = "block";
             valid = false;
         }
 
         if (!valid) {
-            e.preventDefault(); // BLOCCA IL SUBMIT
+            e.preventDefault(); // blocca il submit html in caso la validazione fallisse
         }
 
     });
