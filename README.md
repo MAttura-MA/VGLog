@@ -45,7 +45,7 @@ A personal video game library tracker built with Blazor Server and ASP.NET Core.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/vglog.git
+git clone https://github.com/MAttura-MA/vglog.git
 cd vglog
 
 # Run the app
