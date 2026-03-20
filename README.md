@@ -39,7 +39,7 @@ A personal video game library tracker built with Blazor Server and ASP.NET Core.
 ## 🚀 Getting Started
 
 ### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download)
 
 ### Installation
 
