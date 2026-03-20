@@ -30,7 +30,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 //eccezione della policy globale di restrizioni verso gli utenti non loggati per poter accedere al login anche da anonimi
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AllowAnonymousToPage("/Account/Login");
+    options.Conventions.AllowAnonymousToPage("/account/Login");
 });
 
 // registrazione dei servizi necessari dei componenti blazor (DialogService, NotificationService, tooltipService, ContextMenuService)
@@ -80,7 +80,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 //Configurazione della creazione del cookie nel browser per riconoscimento dell'utente, importante che stia dopo AddIdentity
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login"; //reindirizzazione automatica dell'utente non loggato al tentativo di accedere ad una pagina protetta
+    options.LoginPath = "/account/login"; //reindirizzazione automatica dell'utente non loggato al tentativo di accedere ad una pagina protetta
 
     //protezione da attacchi JS
     options.Cookie.HttpOnly = true; 
