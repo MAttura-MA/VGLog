@@ -48,9 +48,6 @@ A personal video game library tracker built with Blazor Server and ASP.NET Core.
 git clone https://github.com/yourusername/vglog.git
 cd vglog
 
-# Apply database migrations
-dotnet ef database update
-
 # Run the app
 dotnet run
 ```
