@@ -1,7 +1,5 @@
 ## VGLog
 
-EN
-
 A personal video game library tracker built with Blazor Server and ASP.NET Core. Log your games, track your hours, rate your experiences.
 
 ---
