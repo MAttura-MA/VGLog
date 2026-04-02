@@ -1,0 +1,4 @@
+﻿.RegisterTextArea {
+    overflow: scroll !important;
+    resize: none !important;
+}

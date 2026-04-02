@@ -10,6 +10,7 @@
 @using Microsoft.AspNetCore.Identity
 @using VGLog.Components.Pages.Videogame
 @using VGLog.Models
+@using VGLog.Models.Enums
 @using VGLog.Services.DTOs
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -73,7 +74,7 @@
 
                 </div>
 
-                @if (PlayedOrNot != GameStatus.Completed)
+                @if (PlayedOrNot != GameStatusEnum.Completed)
                 {
                     <RadzenButton Text="Add to library"
                                   Click="AddGame"
@@ -87,7 +88,7 @@
 
 
 
-        @if (SelectedGame != null && PlayedOrNot == GameStatus.Completed)
+        @if (SelectedGame != null && PlayedOrNot == GameStatusEnum.Completed)
         {
             <div class="opt3-divider"></div>
             <div class="opt3-right">
@@ -213,9 +214,9 @@
 @code {
     public List<Videogame> AvailableGames = new();
     private List<UserGame> UserGames { get; set; } = new();
-    protected List<KeyValuePair<GameStatus, string>> GameStatuses =
-    Enum.GetValues<GameStatus>()
-        .Select(e => new KeyValuePair<GameStatus, string>(
+    protected List<KeyValuePair<GameStatusEnum, string>> GameStatuses =
+    Enum.GetValues<GameStatusEnum>()
+        .Select(e => new KeyValuePair<GameStatusEnum, string>(
             e,
             e.GetType()
              .GetMember(e.ToString())[0]
@@ -229,7 +230,7 @@
     private AuthenticationState? authState;
     private ClaimsPrincipal? user;
     private GetUserGamesDto? ProfileData;
-    private GameStatus PlayedOrNot { get; set; }
+    private GameStatusEnum PlayedOrNot { get; set; }
     private int? SelectedGameId { get; set; }
     private Videogame? SelectedGame { get; set; }
     private int SelectedRating { get; set; } = 1;
@@ -288,7 +289,7 @@
         if (SelectedGame == null) return;
 
 
-        if (PlayedOrNot == GameStatus.Completed && (!HoursPlayed.HasValue || HoursPlayed.Value <= 0))
+        if (PlayedOrNot == GameStatusEnum.Completed && (!HoursPlayed.HasValue || HoursPlayed.Value <= 0))
         {
             NotificationService.Notify(
                 NotificationSeverity.Warning,

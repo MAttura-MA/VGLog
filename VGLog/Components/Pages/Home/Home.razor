@@ -6,6 +6,7 @@
 @using VGLog.Components.Layout
 @using VGLog.Components.Pages.Home.Profile
 @using VGLog.Models
+@using VGLog.Models.Enums
 @using VGLog.Models.ViewModels
 @using VGLog.Services.DTOs
 @using System.Security.Claims;
@@ -247,12 +248,12 @@ else
         NavigationManager.NavigateTo("/Games");
     }
 
-    private string GetStatusClass(GameStatus? status) => status switch
+    private string GetStatusClass(GameStatusEnum? status) => status switch
     {
-        GameStatus.Completed => "h-status-completed",
-        GameStatus.Playing => "h-status-playing",
-        GameStatus.Toplay => "h-status-toplay",
-        GameStatus.Dropped => "h-status-dropped",
+        GameStatusEnum.Completed => "h-status-completed",
+        GameStatusEnum.Playing => "h-status-playing",
+        GameStatusEnum.Toplay => "h-status-toplay",
+        GameStatusEnum.Dropped => "h-status-dropped",
         _ => ""
     };
 }

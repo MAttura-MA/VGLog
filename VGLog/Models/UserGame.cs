@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VGLog.Models.Enums;
 
 namespace VGLog.Models
 {
@@ -24,7 +25,7 @@ namespace VGLog.Models
 
         public DateTime? TimeStampAdded { get; set; } = DateTime.Now;
 
-        public GameStatus GameStatus { get; set; }
+        public GameStatusEnum GameStatus { get; set; }
 
         public int? HoursPlayed { get; set; }
     }

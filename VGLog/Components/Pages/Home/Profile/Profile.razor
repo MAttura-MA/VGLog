@@ -10,6 +10,7 @@
 @using System.Security.Claims
 @using VGLog.Data
 @using VGLog.Models
+@using VGLog.Models.Enums
 @using VGLog.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using VGLog.Services.DTOs
@@ -191,15 +192,15 @@
 </div>
 
 @code {
-    protected List<KeyValuePair<GameStatus, string>> GameStatuses =
-    Enum.GetValues<GameStatus>()
-        .Select(e => new KeyValuePair<GameStatus, string>(
-            e,
-            e.GetType()
-             .GetMember(e.ToString())[0]
-             .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
-        ))
-        .ToList();
+    // protected List<KeyValuePair<GameStatusEnum, string>> GameStatuses =
+    // Enum.GetValues<GameStatusEnum>()
+    //     .Select(e => new KeyValuePair<GameStatusEnum, string>(
+    //         e,
+    //         e.GetType()
+    //          .GetMember(e.ToString())[0]
+    //          .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
+    //     ))
+    //     .ToList();
 
     //variabili per autenticazione
     private AuthenticationState? authState;

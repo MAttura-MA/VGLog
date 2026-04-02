@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using VGLog.Data;
 using VGLog.Models;
+using VGLog.Models.Enums;
 using VGLog.Services.DTOs;
 
 namespace VGLog.Services
@@ -19,7 +20,7 @@ namespace VGLog.Services
             _userManager = userManager;
         }
 
-        public async Task<UserGame> AddGameToUserAsync(int videogameId, int? personalRating, string? notes, string paramUserId, GameStatus PlayedOrNot, int? HoursPlayed)
+        public async Task<UserGame> AddGameToUserAsync(int videogameId, int? personalRating, string? notes, string paramUserId, GameStatusEnum PlayedOrNot, int? HoursPlayed)
         {
             var gameExists = await _context.Videogames
                 .FirstOrDefaultAsync(g => g.Id == videogameId);
@@ -32,7 +33,7 @@ namespace VGLog.Services
                     UserId = paramUserId,
                     VideogameId = videogameId,
                     PersonalRating = personalRating,
-                    CompletedAt = PlayedOrNot == GameStatus.Completed ? DateTime.Now : null,
+                    CompletedAt = PlayedOrNot == GameStatusEnum.Completed ? DateTime.Now : null,
                     GameStatus = PlayedOrNot,
                     HoursPlayed = HoursPlayed,
                     Notes = notes
@@ -59,10 +60,10 @@ namespace VGLog.Services
                 return new GetUserGamesDto();
 
             //counter semplici
-            var completedGames = userGames.Count(x => x.GameStatus == GameStatus.Completed);
-            var playingGames = userGames.Count(x => x.GameStatus == GameStatus.Playing);
-            var toPlayGames = userGames.Count(x => x.GameStatus == GameStatus.Toplay);
-            var droppedGames = userGames.Count(x => x.GameStatus == GameStatus.Dropped);
+            var completedGames = userGames.Count(x => x.GameStatus == GameStatusEnum.Completed);
+            var playingGames = userGames.Count(x => x.GameStatus == GameStatusEnum.Playing);
+            var toPlayGames = userGames.Count(x => x.GameStatus == GameStatusEnum.Toplay);
+            var droppedGames = userGames.Count(x => x.GameStatus == GameStatusEnum.Dropped);
             var totalHours = userGames.Sum(x => x.HoursPlayed);
 
             var avgRating = userGames
@@ -76,7 +77,7 @@ namespace VGLog.Services
                 .FirstOrDefault();
 
             var mostRecentlyCompletedGame = userGames
-                .Where(x => x.GameStatus == GameStatus.Completed && x.CompletedAt.HasValue)
+                .Where(x => x.GameStatus == GameStatusEnum.Completed && x.CompletedAt.HasValue)
                 .OrderByDescending(x => x.CompletedAt)
                 .FirstOrDefault();
 
@@ -110,13 +111,13 @@ namespace VGLog.Services
             userGame.Notes = dto.Notes;
             userGame.PersonalRating = dto.PersonalRating;
             userGame.GameStatus = dto.GameStatus;
-            userGame.CompletedAt = dto.GameStatus == GameStatus.Completed ? (userGame.CompletedAt ?? DateTime.Now) : null;
+            userGame.CompletedAt = dto.GameStatus == GameStatusEnum.Completed ? (userGame.CompletedAt ?? DateTime.Now) : null;
 
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task EditUserGameStatusAsync(int userGameId, GameStatus newStatus)
+        public async Task EditUserGameStatusAsync(int userGameId, GameStatusEnum newStatus)
         {
             var userGame = await _context.UserGames
                 .FirstOrDefaultAsync(u => u.Id == userGameId);
@@ -124,7 +125,7 @@ namespace VGLog.Services
             if (userGame == null) return;
 
             userGame.GameStatus = newStatus;
-            userGame.CompletedAt = newStatus == GameStatus.Completed ? (userGame.CompletedAt ?? DateTime.Now) : null;
+            userGame.CompletedAt = newStatus == GameStatusEnum.Completed ? (userGame.CompletedAt ?? DateTime.Now) : null;
 
             await _context.SaveChangesAsync();
         }

@@ -1,4 +1,4 @@
-﻿using VGLog.Models;
+﻿using VGLog.Models.Enums;
 
 namespace VGLog.Services.DTOs
 {
@@ -9,6 +9,6 @@ namespace VGLog.Services.DTOs
         public string? Notes { get; set; }
         public int? PersonalRating { get; set; }
 
-        public GameStatus GameStatus { get; set; }
+        public GameStatusEnum GameStatus { get; set; }
     }
 }

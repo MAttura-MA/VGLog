@@ -1,6 +1,7 @@
 ﻿@using System.Reflection
 @using System.ComponentModel.DataAnnotations
 @using VGLog.Models
+@using VGLog.Models.Enums
 @using VGLog.Services
 @using VGLog.Services.DTOs
 
@@ -31,7 +32,7 @@
     </div>
 
 
-    @if (EditDto.GameStatus != GameStatus.Toplay)
+    @if (EditDto.GameStatus != GameStatusEnum.Toplay)
     {
         <div>
             <RadzenLabel Text="Notes" Style="color:#a0a0b8; font-size:12px; text-transform:uppercase; letter-spacing:1px;"/>
@@ -97,16 +98,16 @@
     private async Task MarkAsdropped(UserGame item)
     {
 
-        await UserGamesService.EditUserGameStatusAsync(item.Id, GameStatus.Dropped);
+        await UserGamesService.EditUserGameStatusAsync(item.Id, GameStatusEnum.Dropped);
 
-        item.GameStatus = GameStatus.Dropped;
+        item.GameStatus = GameStatusEnum.Dropped;
 
         StateHasChanged();
     }
 
-    protected List<KeyValuePair<GameStatus, string>> GameStatuses =
-    Enum.GetValues<GameStatus>()
-        .Select(e => new KeyValuePair<GameStatus, string>(
+    protected List<KeyValuePair<GameStatusEnum, string>> GameStatuses =
+    Enum.GetValues<GameStatusEnum>()
+        .Select(e => new KeyValuePair<GameStatusEnum, string>(
             e,
             e.GetType()
              .GetMember(e.ToString())[0]
