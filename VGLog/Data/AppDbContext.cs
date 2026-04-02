@@ -18,6 +18,7 @@ namespace VGLog.Data
     public DbSet<SoftwareHouse> SoftwareHouses {  get; set; }
     public DbSet<Genre> Genres { get; set; }
     public DbSet<Platform> Platforms { get; set; }
+    public DbSet<Friendship> Friendships { get; set; }
 
         //metodo chiamato  alla costruzione del modello del database, mappa tutte le relazioni tra le entità
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,6 +56,22 @@ namespace VGLog.Data
             //creazione di un indice unico, un utente non può aggiungere lo stesso gioco due votle,
             modelBuilder.Entity<UserGame>()
                 .HasIndex(ug => new { ug.UserId, ug.VideogameId })
+                .IsUnique();
+
+            modelBuilder.Entity<Friendship>()
+                .HasOne(f => f.UserRequester)
+                .WithMany()
+                .HasForeignKey(f => f.UserRequesterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Friendship>()
+                .HasOne(f => f.UserReceiver)
+                .WithMany()
+                .HasForeignKey(f => f.UserReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Friendship>()
+                .HasIndex(f => new { f.UserRequesterId, f.UserReceiverId })
                 .IsUnique();
         }
             
