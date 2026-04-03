@@ -12,6 +12,7 @@ namespace VGLog.Services.Interfaces
         Task<FriendshipStatus?> GetStatusAsync(string userA, string userB);
         Task<List<ApplicationUser>> GetFriendsAsync(string userId);
         Task<List<Friendship>> GetPendingRequestsAsync(string userId);
+        Task<Dictionary<string, FriendshipStatus?>> GetStatusesAsync(string currentUserId, List<string> otherUserIds);
 
     }
 }

@@ -51,6 +51,10 @@ builder.Services.AddScoped<SoftwareHouseService>();
 builder.Services.AddScoped<PlatformService>();
 builder.Services.AddScoped<GenreService>();
 builder.Services.AddScoped<UserGamesService>();
+builder.Services.AddScoped<IFriendshipService, FriendshipService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+
 
 //Identity è il sistema di ASP.NET per la gestione degli utenti, registra una serie di servizi pronti:
 //- UserManager (creazione utenti),

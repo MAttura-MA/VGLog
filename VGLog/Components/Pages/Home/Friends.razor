@@ -1,0 +1,254 @@
+﻿@page "/friends"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using VGLog.Models
+@using VGLog.Models.Enums
+@using VGLog.Services.Interfaces
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IFriendshipService FriendshipService
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserService UserService
+
+<PageTitle>VGLog - My friends</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Friends</h1>
+        <p class="page-subtitle">Connect with other players</p>
+    </div>
+</div>
+
+<div class="friends-search-wrapper">
+    <div class="search-input-row">
+        <RadzenTextBox @bind.Value="searchQuery"
+                       @oninput="OnSearchInput" />
+        @if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            <button class="btn-clear" @onclick="ClearSearch">
+                <RadzenIcon Icon="close" />
+            </button>
+        }
+    </div>
+
+    @if (searchResults.Any())
+    {
+        <div class="search-dropdown">
+            @foreach (var u in searchResults)
+            {
+                var status = searchStatuses.GetValueOrDefault(u.Id);
+                <div class="search-result-item">
+                    <div class="friend-avatar avatar-purple">@u.UserName</div>
+                    <div class="friend-info">
+                        <span class="friend-name">@u.UserName</span>
+                    </div>
+                    <div class="friend-actions">
+                        @if (status == null)
+                        {
+                            <button class="btn-action btn-add" @onclick="() => SendRequest(u.Id)">
+                                <RadzenIcon Icon="person_add" /> Add
+                            </button>
+                        }
+                        else if (status == FriendshipStatus.Pending)
+                        {
+                            <span class="badge-status badge-pending">Pending</span>
+                        }
+                        else if (status == FriendshipStatus.Accepted)
+                        {
+                            <span class="badge-status badge-accepted">
+                                <RadzenIcon Icon="check_circle" /> Friends
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (searchQuery.Length >= 2 && !isSearching)
+    {
+        <div class="search-dropdown">
+            <div class="search-empty">No users found for "@searchQuery"</div>
+        </div>
+    }
+</div>
+
+
+@if (incomingRequests.Any())
+{
+    <div class="section-block" style="margin-top:1.5rem">
+        <div class="section-header">
+            <span class="card-section-title">FRIEND REQUEST</span>
+            <span class="bagne-count badge-purple">@incomingRequests.Count</span>
+        </div>
+        <div class="friends-list">
+            @foreach (var req in incomingRequests)
+            {
+                <div class="friend-card card-incoming">
+                    <div class="friend-avatar avatar-purple">@req.UserRequester.UserName</div>
+                    <div class="friend-info">
+                        <span class="friend-name">@req.UserRequester.UserName</span>
+                        <span class="friend-meta">Sent @req.CreatedAt</span>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="btn-action btn-accept"
+                                @onclick="() => AcceptRequest(req.UserRequesterId)">
+                            <RadzenIcon Icon="check" /> Accept
+                        </button>
+                        <button class="btn-action btn-decline"
+                                @onclick="() => DeclineRequest(req.UserRequesterId)">
+                            <RadzenIcon Icon="close" />
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+}
+
+<div class="section-block" style="margin-top:1.5rem">
+    <div class="section-header">
+        <span class="card-section-title">YOUR FRIENDS</span>
+        <span class="badge-count badge-green">@friends.Count</span>
+    </div>
+
+    @if (!friends.Any())
+    {
+        <div class="empty-state">
+            <span>🎮</span>
+            <p>No friends yet — search for players above to get started!</p>
+        </div>
+    }
+    else
+    {
+        <div class="friends-list">
+            @foreach (var friend in friends)
+            {
+                <div class="friend-card">
+                    <div class="friend-avatar avatar-green">@friend.UserName</div>
+                    <div class="friend-info">
+                        <span class="friend-name">@friend.UserName</span>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="btn-action btn-remove"
+                                title="Remove friend"
+                                @onclick="() => RemoveFriend(friend.Id)">
+                            <RadzenIcon Icon="person_remove" />
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+@code {
+    private string? userId;
+
+    private bool isSearching = false;
+    private System.Timers.Timer? debounceTimer;
+
+
+    private List<Friendship> incomingRequests = new();
+    private List<ApplicationUser> friends = new();
+
+    private string searchQuery = string.Empty;
+    private List<ApplicationUser> searchResults = new();
+    private Dictionary<string, FriendshipStatus?> searchStatuses = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        incomingRequests = await FriendshipService.GetPendingRequestsAsync(userId!);
+        friends = await FriendshipService.GetFriendsAsync(userId!);
+    }
+
+    private async Task SendRequest(string receiverId)
+    {
+        await FriendshipService.SendRequestAsync(userId!, receiverId);
+    }
+
+    private async Task AcceptRequest(string requesterId)
+    {
+        await FriendshipService.AcceptRequestAsync(userId!, requesterId);
+    }
+
+    private async Task DeclineRequest(string requesterId)
+    {
+        await FriendshipService.DeclineRequestAsync(userId!, requesterId);
+    }
+
+    private async Task RemoveFriend(string friendId)
+    {
+        await FriendshipService.RemoveFriendAsync(userId!, friendId);
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+
+        debounceTimer?.Stop();
+
+        debounceTimer = new System.Timers.Timer(300);
+
+        debounceTimer.Elapsed += async (_, _) =>
+        {
+            await InvokeAsync(async () =>
+    {
+        await SearchUsers();
+    });
+        };
+
+        debounceTimer.AutoReset = false;
+        debounceTimer.Start();
+    }
+
+    private async Task SearchUsers()
+    {
+        isSearching = true;
+
+        if (string.IsNullOrWhiteSpace(searchQuery) || searchQuery.Length < 2)
+        {
+            searchResults = new();
+            searchStatuses = new();
+            return;
+        }
+
+        var q = searchQuery.ToLower();
+
+        var allUsers = await UserService.SearchUsersAsync(q, userId!);
+
+        var ids = allUsers.Select(u => u.Id).ToList();
+
+        searchStatuses = await FriendshipService.GetStatusesAsync(userId!, ids);
+
+        searchResults = allUsers;
+
+        isSearching = false;
+
+        StateHasChanged();
+    }
+
+    private void ClearSearch()
+    {
+        searchQuery = string.Empty;
+        searchResults = new();
+        searchStatuses = new();
+    }
+
+}
+
+    

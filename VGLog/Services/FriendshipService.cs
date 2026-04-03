@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VGLog.Data;
 using VGLog.Models;
@@ -20,9 +21,15 @@ namespace VGLog.Services
 
         public async Task SendRequestAsync(string requesterId, string receiverId)
         {
+            var requester = await _userManager.FindByIdAsync(requesterId);
+            var receiver = await _userManager.FindByIdAsync(receiverId);
+
+            if (requester is null || receiver is null)
+                throw new Exception("User not found");
+
             var exists = await _context.Friendships.AnyAsync(f =>
-            (f.UserRequesterId == requesterId && f.UserReceiverId == receiverId) ||
-            (f.UserRequesterId == receiverId && f.UserReceiverId == requesterId));
+                (f.UserRequesterId == requesterId && f.UserReceiverId == receiverId) ||
+                (f.UserRequesterId == receiverId && f.UserReceiverId == requesterId));
 
             if (exists)
                 return;
@@ -40,6 +47,7 @@ namespace VGLog.Services
 
         public async Task AcceptRequestAsync( string currentUserId, string requesterId)
         {
+            
             var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
             f.UserRequesterId == requesterId &&
             f.UserReceiverId == currentUserId &&
@@ -58,27 +66,31 @@ namespace VGLog.Services
         {
             var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
             f.UserRequesterId == requesterId &&
-            f.UserReceiverId == currentUserId);
+            f.UserReceiverId == currentUserId &&
+            f.Status == FriendshipStatus.Pending);
 
-            if (friendship is not null)
+            if (friendship is null)
             {
-                _context.Friendships.Remove(friendship);
-                await _context.SaveChangesAsync();
-
+                return;
             }
+            _context.Friendships.Remove(friendship);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RemoveFriendAsync(string userId, string friendId)
         {
             var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
-            (f.UserRequesterId == userId && f.UserReceiverId == friendId) ||
-            (f.UserRequesterId == friendId && f.UserReceiverId == userId));
+                ((f.UserRequesterId == userId && f.UserReceiverId == friendId) ||
+                (f.UserRequesterId == friendId && f.UserReceiverId == userId))
+                && f.Status == FriendshipStatus.Accepted);
 
-            if (friendship is not null)
+            if (friendship is null)
             {
-                _context.Friendships.Remove(friendship);
-                await _context.SaveChangesAsync();
+                return;
             }
+
+            _context.Friendships.Remove(friendship);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<FriendshipStatus?> GetStatusAsync(string userA, string userB)
@@ -105,6 +117,27 @@ namespace VGLog.Services
                 .Include(f => f.UserRequester)
                 .Where(f => f.UserReceiverId == userId && f.Status == FriendshipStatus.Pending)
                 .ToListAsync();
+        }
+
+        public async Task<Dictionary<string, FriendshipStatus?>> GetStatusesAsync(string currentUserId, List<string> otherUserIds)
+        {
+            var friendships = await _context.Friendships
+                                    .Where(f =>
+                                    (f.UserRequesterId == currentUserId && otherUserIds.Contains(f.UserReceiverId)) ||
+                                    (f.UserReceiverId == currentUserId && otherUserIds.Contains(f.UserRequesterId)))
+                                    .ToListAsync();
+
+            var result = new Dictionary<string, FriendshipStatus?>();
+
+            foreach (var id in otherUserIds)
+            {
+                var friendhsip = friendships.FirstOrDefault(f =>
+                f.UserRequesterId == id || f.UserReceiverId == id);
+
+                result[id] = friendhsip?.Status;
+            }
+
+            return result;
         }
     }
 }
