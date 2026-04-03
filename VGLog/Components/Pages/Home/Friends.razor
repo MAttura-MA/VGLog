@@ -43,9 +43,9 @@
             {
                 var status = searchStatuses.GetValueOrDefault(u.Id);
                 <div class="search-result-item">
-                    <div class="friend-avatar avatar-purple">@u.UserName</div>
+                    <div class="friend-avatar avatar-purple">@InitialOf(u.DisplayName)</div>
                     <div class="friend-info">
-                        <span class="friend-name">@u.UserName</span>
+                        <span class="friend-name">@u.DisplayName</span>
                     </div>
                     <div class="friend-actions">
                         @if (status == null)
@@ -89,9 +89,9 @@
             @foreach (var req in incomingRequests)
             {
                 <div class="friend-card card-incoming">
-                    <div class="friend-avatar avatar-purple">@req.UserRequester.UserName</div>
+                    <div class="friend-avatar avatar-purple">@InitialOf(req.UserRequester.DisplayName)</div>
                     <div class="friend-info">
-                        <span class="friend-name">@req.UserRequester.UserName</span>
+                        <span class="friend-name">@req.UserRequester.DisplayName</span>
                         <span class="friend-meta">Sent @req.CreatedAt</span>
                     </div>
                     <div class="friend-actions">
@@ -130,9 +130,9 @@
             @foreach (var friend in friends)
             {
                 <div class="friend-card">
-                    <div class="friend-avatar avatar-green">@friend.UserName</div>
+                    <div class="friend-avatar avatar-green">@InitialOf(friend.DisplayName)</div>
                     <div class="friend-info">
-                        <span class="friend-name">@friend.UserName</span>
+                        <span class="friend-name">@friend.DisplayName</span>
                     </div>
                     <div class="friend-actions">
                         <button class="btn-action btn-remove"
@@ -179,21 +179,44 @@
     private async Task SendRequest(string receiverId)
     {
         await FriendshipService.SendRequestAsync(userId!, receiverId);
+        StateHasChanged();
+
     }
 
     private async Task AcceptRequest(string requesterId)
     {
         await FriendshipService.AcceptRequestAsync(userId!, requesterId);
+
+        var req = incomingRequests.FirstOrDefault(r => r.UserRequesterId == requesterId);
+        if (req != null)
+            incomingRequests.Remove(req);
+
+        StateHasChanged();
     }
 
     private async Task DeclineRequest(string requesterId)
     {
         await FriendshipService.DeclineRequestAsync(userId!, requesterId);
+
+        var req = incomingRequests.FirstOrDefault(r => r.UserRequesterId == requesterId);
+        if (req != null)
+            incomingRequests.Remove(req);
+
+        StateHasChanged();
+
     }
 
     private async Task RemoveFriend(string friendId)
     {
         await FriendshipService.RemoveFriendAsync(userId!, friendId);
+
+        var req = friends.FirstOrDefault(r => r.Id == friendId);
+
+        if (req != null)
+            friends.Remove(req);
+
+        StateHasChanged();
+
     }
 
     private async Task OnSearchInput(ChangeEventArgs e)
@@ -248,6 +271,8 @@
         searchResults = new();
         searchStatuses = new();
     }
+
+    private static string InitialOf(string? name) => string.IsNullOrEmpty(name) ? "?" : name[0].ToString().ToUpper();
 
 }
 
