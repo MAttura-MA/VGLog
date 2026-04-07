@@ -14,6 +14,8 @@
 @inject IFriendshipService FriendshipService
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserService UserService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
 
 <PageTitle>VGLog - My friends</PageTitle>
 
@@ -27,7 +29,8 @@
 <div class="friends-search-wrapper">
     <div class="search-input-row">
         <RadzenTextBox @bind.Value="searchQuery"
-                       @oninput="OnSearchInput" />
+                       @oninput="OnSearchInput"
+                       Style="background-color:#1a1a2e; color: white;" />
         @if (!string.IsNullOrWhiteSpace(searchQuery))
         {
             <button class="btn-clear" @onclick="ClearSearch">
@@ -96,7 +99,8 @@
                     </div>
                     <div class="friend-actions">
                         <button class="btn-action btn-accept"
-                                @onclick="() => AcceptRequest(req.UserRequesterId)">
+                                @onclick="() => AcceptRequest(req.UserRequesterId)"
+                                style="color: white;">
                             <RadzenIcon Icon="check" /> Accept
                         </button>
                         <button class="btn-action btn-decline"
@@ -113,8 +117,7 @@
 
 <div class="section-block" style="margin-top:1.5rem">
     <div class="section-header">
-        <span class="card-section-title">YOUR FRIENDS</span>
-        <span class="badge-count badge-green">@friends.Count</span>
+        <span class="card-section-title">YOUR FRIENDS</span><span class="badge-count badge-green">@friends.Count</span>
     </div>
 
     @if (!friends.Any())
@@ -180,6 +183,7 @@
     {
         await FriendshipService.SendRequestAsync(userId!, receiverId);
         StateHasChanged();
+        NotificationService.Notify(NotificationSeverity.Success, "Friend request sent!", "Your friend request has been sent.");
 
     }
 
@@ -191,7 +195,11 @@
         if (req != null)
             incomingRequests.Remove(req);
 
+        friends = await FriendshipService.GetFriendsAsync(userId!);
+
         StateHasChanged();
+        NotificationService.Notify(NotificationSeverity.Success, "Friend request accepted!", "The friend request has been accept.");
+
     }
 
     private async Task DeclineRequest(string requesterId)
@@ -204,10 +212,23 @@
 
         StateHasChanged();
 
+        NotificationService.Notify(NotificationSeverity.Error, "Friend request denied.", "The friend request has been denied.");
+
+
+
     }
 
     private async Task RemoveFriend(string friendId)
     {
+        bool? confirmed = await DialogService.Confirm(
+            $"Are you sure you want to delete this friend?",
+            "Confirm Delete",
+            new ConfirmOptions() { CancelButtonText = "Yes", OkButtonText = "No", Style = "position: fixed; top: 50%, Left: 50%; trasform: translate(-50%, -50%);" }
+        );
+
+        if (confirmed != false)
+            return;
+
         await FriendshipService.RemoveFriendAsync(userId!, friendId);
 
         var req = friends.FirstOrDefault(r => r.Id == friendId);
@@ -216,6 +237,8 @@
             friends.Remove(req);
 
         StateHasChanged();
+
+        NotificationService.Notify(NotificationSeverity.Warning, "Friend removed.", "The user has been removed from the friendlist.");
 
     }
 
