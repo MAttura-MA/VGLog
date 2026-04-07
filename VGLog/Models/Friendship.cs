@@ -25,7 +25,7 @@ namespace VGLog.Models
 
         public FriendshipStatus Status { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
 
     }
